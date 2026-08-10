@@ -19,10 +19,41 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>21</maven.compiler.release>
+    <junit.jupiter.version>5.11.4</junit.jupiter.version>
+    <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
   </properties>
 
   <modules>
     <module>aip-core</module>
     <module>aip-csm-builder</module>
   </modules>
+
+  <!--
+    Shared test infrastructure (tasks.md 1.4): every module uses
+    JUnit 5 for unit/contract/fixture-based tests, declared here once
+    so each module's own pom only needs a bare, versionless
+    <dependency> declaration.
+  -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

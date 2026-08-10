@@ -21,4 +21,12 @@
     AI frameworks, CLI frameworks, server frameworks, and
     language-specific analyzers.
   </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>

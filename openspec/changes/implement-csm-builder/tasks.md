@@ -2,8 +2,8 @@
 
 - [x] 1.1 Create the parent Maven project (Java 21+) with `aip-core` and `aip-csm-builder` modules, per `project.md` §10 and `design.md` Decision 1.
 - [x] 1.2 Configure `aip-csm-builder`'s POM to depend on `aip-core` only — no dependency on `aip-analyzer` or any Repository Understanding implementation module (invariants 1, 2). Depends on: 1.1.
-- [ ] 1.3 Add a dependency-graph CI check that fails the build if `aip-csm-builder` gains any non-test dependency outside `aip-core` (invariants 1, 2). Depends on: 1.2.
-- [ ] 1.4 Set up shared test infrastructure and directory conventions for both modules. Depends on: 1.1.
+- [x] 1.3 Add a dependency-graph CI check that fails the build if `aip-csm-builder` gains any non-test dependency outside `aip-core` (invariants 1, 2). Depends on: 1.2.
+- [x] 1.4 Set up shared test infrastructure and directory conventions for both modules. Depends on: 1.1.
 
 ## 2. `aip-core`: CSM Domain Model
 

@@ -29,5 +29,43 @@
       <artifactId>aip-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <!--
+        Dependency-graph guard (design.md Decision 1; tasks.md 1.3):
+        fails the build if this module's resolved dependency graph
+        ever contains anything other than aip-core — in particular,
+        aip-analyzer or a future Repository Understanding
+        implementation module.
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>check-module-dependencies</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-module-dependencies.sh</executable>
+              <arguments>
+                <argument>aip-csm-builder</argument>
+                <argument>aip:aip-core</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
