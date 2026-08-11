@@ -55,5 +55,34 @@
         </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <!--
+        Evidence-contract uniqueness guard (tasks.md 3.6, 24.2;
+        invariant 3): fails the reactor build if any Java source file,
+        in any module, declares a class/record/interface/enum with the
+        same name as one of aip.core.evidence's own Repository Evidence
+        contract types, outside that package. Bound to the parent
+        (reactor root) rather than any one module's pom, since it scans
+        every module's src/main and src/test.
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>check-no-duplicate-evidence-types</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/scripts/check-no-duplicate-evidence-types.sh</executable>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 </project>

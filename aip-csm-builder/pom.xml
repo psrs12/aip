@@ -102,6 +102,42 @@
               </arguments>
             </configuration>
           </execution>
+          <!--
+            No-AI/heuristic-import guard (tasks.md 24.3): fails the
+            build if production source imports a randomness API or a
+            known AI/LLM SDK package.
+          -->
+          <execution>
+            <id>check-no-ai-heuristic-imports</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-no-ai-heuristic-imports.sh</executable>
+              <arguments>
+                <argument>aip-csm-builder</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <!--
+            No-excluded-construction guard (tasks.md 24.4): fails the
+            build if aip.csmbuilder.mapper/mapping ever construct an
+            Architecture Component or Architectural Boundary.
+          -->
+          <execution>
+            <id>check-no-excluded-construction</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-no-excluded-construction.sh</executable>
+              <arguments>
+                <argument>aip-csm-builder</argument>
+              </arguments>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

@@ -90,7 +90,7 @@
 
 - [x] 13.1 Verify no Mapper is ever registered for `ConfigFile`/`ConfigReference` Evidence kinds; add a construction-time guard that fails loudly if one is. Depends on: 4.2.
 - [x] 13.2 Add a guard/test proving CSM Builder never constructs an `implementation/extension` or `invocation` relationship under current evidence coverage. Depends on: 4.3.
-- [ ] 13.3 Document, in code and in the traceability matrix (Section 23), the "future evidence coverage extends via new Mapper registration only" path. Depends on: 13.1, 13.2. (Code documentation done — see `EvidenceKindMapperRegistry` and `ExcludedRelationshipTypeGuard` javadoc; traceability matrix itself is built in Section 23.)
+- [x] 13.3 Document, in code and in the traceability matrix (Section 23), the "future evidence coverage extends via new Mapper registration only" path. Depends on: 13.1, 13.2. (Code documentation: `EvidenceKindMapperRegistry`/`ExcludedRelationshipTypeGuard` javadoc; traceability matrix: `traceability.md`'s "Future evidence coverage extends without redesign" entry, backed by `ExtensionMechanismTest` (Section 20).)
 
 ## 14. Partial and Failed Evidence Handling
 
@@ -155,9 +155,9 @@
 
 ## 24. Architectural Invariant Enforcement
 
-- [ ] 24.1 Finalize the dependency-graph CI check enforcing invariants 1 and 2 (`aip-csm-builder` depends on `aip-core` only; never `aip-analyzer` or a Repository Understanding implementation module). Depends on: 1.3.
-- [ ] 24.2 Add a source-scan or module-boundary check enforcing invariant 3 (no duplicate/parallel Evidence DTOs outside `aip.core.evidence`). Depends on: 3.6.
-- [ ] 24.3 Add tests confirming no AI/LLM call, heuristic scoring, or probabilistic-inference code path exists anywhere in `aip-csm-builder`. Depends on: 1.1.
-- [ ] 24.4 Add tests confirming CSM Builder never constructs an Architecture Component, Architectural Boundary, or Business Context element under any input. Depends on: 2.1.
-- [ ] 24.5 Add tests confirming CSM Builder construction never reads from, or depends on, a Policy/Rule Model or Runtime Model. Depends on: 4.3.
-- [ ] 24.6 Final gate: confirm (via review checklist and CI) that this change contains no Repository Understanding implementation code, that both archived specifications remain unmodified, and that all invariants 1–10 hold. Depends on: all preceding sections.
+- [x] 24.1 Finalize the dependency-graph CI check enforcing invariants 1 and 2 (`aip-csm-builder` depends on `aip-core` only; never `aip-analyzer` or a Repository Understanding implementation module). Depends on: 1.3. (Already in place since Section 1.3; reconfirmed passing.)
+- [x] 24.2 Add a source-scan or module-boundary check enforcing invariant 3 (no duplicate/parallel Evidence DTOs outside `aip.core.evidence`). Depends on: 3.6. (`scripts/check-no-duplicate-evidence-types.sh`, wired into the parent `pom.xml`.)
+- [x] 24.3 Add tests confirming no AI/LLM call, heuristic scoring, or probabilistic-inference code path exists anywhere in `aip-csm-builder`. Depends on: 1.1. (`scripts/check-no-ai-heuristic-imports.sh`, scoped to `^import` lines to avoid false positives against this codebase's own extensive "no AI/heuristic" documentation.)
+- [x] 24.4 Add tests confirming CSM Builder never constructs an Architecture Component, Architectural Boundary, or Business Context element under any input. Depends on: 2.1. (`scripts/check-no-excluded-construction.sh` (static) + `ArchitecturalInvariantTest.comprehensiveFixtureNeverProducesAnArchitectureComponentOrArchitecturalBoundary` (runtime); Business Context is structurally impossible — not a CSM entity kind at all.)
+- [x] 24.5 Add tests confirming CSM Builder construction never reads from, or depends on, a Policy/Rule Model or Runtime Model. Depends on: 4.3. (`ArchitecturalInvariantTest.mappingOrchestratorApiReferencesNoPolicyRuleOrRuntimeModelType`; structurally, no such type exists anywhere in `aip-core` today.)
+- [x] 24.6 Final gate: confirm (via review checklist and CI) that this change contains no Repository Understanding implementation code, that both archived specifications remain unmodified, and that all invariants 1–10 hold. Depends on: all preceding sections. (See `invariants.md` — reconstructs the full invariants 1–10 list, since no single artifact had ever enumerated it, and confirms each one plus the RU/archived-spec checks via `git log`.)
