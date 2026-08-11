@@ -148,10 +148,10 @@
 
 ## 23. Requirement/Scenario Traceability and Coverage
 
-- [ ] 23.1 Build a traceability matrix mapping each of the 29 requirements / 52 scenarios in `openspec/specs/csm-builder/spec.md` to its automated test(s).
-- [ ] 23.2 Add end-to-end fixture-based tests running the full Mapping Orchestrator against representative multi-language, multi-Module fixture scenarios. Depends on: 21.3, 8.1, 10.4–10.6, 11.1–11.4, 12.1–12.3, 15.1–15.4, 16.1–16.3.
-- [ ] 23.3 Add regression tests specifically for the two defects corrected in stakeholder review: External System uses `integration` (not `dependency`), and API Contract construction never invents a consumer. Depends on: 11.4, 12.3.
-- [ ] 23.4 Add a CI check confirming no test or implementation source references a CSM entity kind, relationship type, provenance category, or confidence level outside the archived vocabulary. Depends on: 2.1–2.5.
+- [x] 23.1 Build a traceability matrix mapping each of the 29 requirements / 52 scenarios in `openspec/specs/csm-builder/spec.md` to its automated test(s). (See `traceability.md`; found and closed one real coverage gap — `ConfigurationExclusionTest` — along the way.)
+- [x] 23.2 Add end-to-end fixture-based tests running the full Mapping Orchestrator against representative multi-language, multi-Module fixture scenarios. Depends on: 21.3, 8.1, 10.4–10.6, 11.1–11.4, 12.1–12.3, 15.1–15.4, 16.1–16.3. (`CsmBuilderFixtureEndToEndTest`.)
+- [x] 23.3 Add regression tests specifically for the two defects corrected in stakeholder review: External System uses `integration` (not `dependency`), and API Contract construction never invents a consumer. Depends on: 11.4, 12.3. (Already present from Sections 11/12 — `ExternalSystemRelationshipTest.unresolvedTargetIsConnectedByIntegrationNeverDependency`, `ApiContractMapperTest.noConsumerEntityIsEverInvented`; the latter's comment now explicitly calls out the stakeholder-review regression it guards.)
+- [x] 23.4 Add a CI check confirming no test or implementation source references a CSM entity kind, relationship type, provenance category, or confidence level outside the archived vocabulary. Depends on: 2.1–2.5. (Already fully enforced: `CsmEntityKind`/`CsmRelationshipType`/`ProvenanceCategory`/`Confidence` are closed enums and `CsmElement` is sealed, so no out-of-vocabulary reference can even compile; `CsmVocabularyClosureTest` (Section 2.6) confirms each enum contains exactly the archived values, no more, no fewer — no separate CI artifact was needed.)
 
 ## 24. Architectural Invariant Enforcement
 

@@ -56,6 +56,10 @@ class ApiContractMapperTest {
 
   @Test
   void noConsumerEntityIsEverInvented() {
+    // Regression test guarding the second defect corrected in
+    // stakeholder review (tasks.md 23.3, alongside ExternalSystemRelationshipTest's
+    // integration-not-dependency guard): an ApiContractDeclaration with
+    // no evidenced consumer must never cause CSM Builder to invent one.
     EvidenceItem type = sourceUnit("com.acme.pkg.MyController");
     EvidenceItem apiContract = apiContract("get-widget", "GET /widgets/{id}");
     EvidenceRelationship reference =

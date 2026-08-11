@@ -166,4 +166,55 @@ public final class FixtureScenarios {
       RepositoryEvidenceModel firstRun,
       RepositoryEvidenceModel secondRun,
       Map<EvidenceId, ChangeStatus> secondRunChangeStatuses) {}
+
+  /**
+   * A multi-module Project spanning two native construct kinds (a
+   * stand-in for "multi-language," since RU's own vocabulary uses
+   * native construct kind labels, not a language identifier — see
+   * {@code Evidence Kind Vocabulary Uses Native Terms}), exercising
+   * structural containment (Section 8), dependency construction with
+   * both a mappable internal target and an unresolved external one
+   * (Sections 10-11), an API contract exposure relationship (Section
+   * 12), and configuration-evidence exclusion (Section 13), together
+   * in one coherent Repository Evidence Model — tasks.md 23.2's
+   * end-to-end scenario. Traces to no single RU scenario by design;
+   * it composes several.
+   */
+  public static RepositoryEvidenceModel multiLanguageRepositoryWithDependenciesAndApiContracts() {
+    RepositoryEvidenceModelBuilder b = RepositoryEvidenceModelBuilder.forRepository("repo-1");
+    EvidenceId repository = b.repository();
+    EvidenceId project = b.project("com.acme:parent");
+
+    // Module A: a "class"-kind (Java-like) Module, maven-built,
+    // depending on Module B (mappable compile-time scope) and an
+    // unresolved external artifact.
+    EvidenceId moduleA = b.module("com.acme:module-a");
+    EvidenceId pkgA = b.pkg("com.acme:module-a:com.acme.a", "com.acme.a");
+    EvidenceId typeA = b.sourceUnit("com.acme.a.ServiceA", "class");
+    EvidenceId methodA = b.method("com.acme.a.ServiceA#doWork()");
+    b.manifestDependencyEdge("edge-internal", "com.acme:module-a", "com.acme:module-b", "maven", "compile");
+    b.manifestDependencyEdge("edge-external", "com.acme:module-a", "com.thirdparty:lib", "maven", "compile");
+
+    // Module B: an "interface"-kind (stand-in for a different native
+    // language convention) Module, exposing an API contract.
+    EvidenceId moduleB = b.module("com.acme:module-b");
+    EvidenceId pkgB = b.pkg("com.acme:module-b:com.acme.b", "com.acme.b");
+    EvidenceId typeB = b.sourceUnit("com.acme.b.WidgetController", "interface");
+    EvidenceId apiContract = b.apiContractDeclaration("contract-1", "GET /widgets/{id}");
+
+    // Configuration evidence - present, but never CSM content.
+    b.configFile("application.yml");
+
+    b.containment(repository, project);
+    b.containment(project, moduleA);
+    b.containment(project, moduleB);
+    b.containment(moduleA, pkgA);
+    b.containment(pkgA, typeA);
+    b.containment(typeA, methodA);
+    b.containment(moduleB, pkgB);
+    b.containment(pkgB, typeB);
+    b.reference(apiContract, typeB);
+
+    return b.build();
+  }
 }
