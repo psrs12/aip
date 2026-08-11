@@ -1,6 +1,7 @@
 package aip.csmbuilder.mapping;
 
 import aip.core.csm.CsmElementId;
+import aip.core.csm.CsmRelationship;
 import aip.core.evidence.EvidenceId;
 import aip.core.evidence.EvidenceItem;
 import aip.core.evidence.RepositoryEvidenceModel;
@@ -37,6 +38,13 @@ import java.util.Optional;
  * implementation being careless does not compromise the
  * {@code observed}-only and traceability guarantees CSM Builder as a
  * whole makes (tasks.md 6.2, 6.3).
+ *
+ * <p>After every Evidence Item has been dispatched, {@link
+ * ContainmentRelationshipBuilder} constructs CSM {@code CONTAINMENT}
+ * relationships from the Evidence Model's own containment structure
+ * (tasks.md 8.1) — a distinct step from per-item Mapper dispatch, since
+ * containment is a relationship between Evidence Items, not an
+ * Evidence Item in its own right.
  */
 public final class MappingOrchestrator {
 
@@ -78,6 +86,10 @@ public final class MappingOrchestrator {
       }
       accumulated = accumulated.merge(result);
     }
+
+    List<CsmRelationship> containmentRelationships =
+        ContainmentRelationshipBuilder.build(evidenceModel, resolvedIds, constructionTimestamp);
+    accumulated = accumulated.merge(new MappingResult(List.of(), containmentRelationships));
 
     return accumulated;
   }

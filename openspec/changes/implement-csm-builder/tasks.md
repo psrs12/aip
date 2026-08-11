@@ -55,8 +55,8 @@
 
 ## 8. Structural Containment Construction
 
-- [ ] 8.1 Implement containment-relationship construction across the full chain (Repository→Project→Module→Package→Type[→Method]) directly from Repository Evidence's own containment. Depends on: 7.1–7.7.
-- [ ] 8.2 Add containment-traversal tests, including the unmanaged-Project and default-Module cases. Depends on: 8.1.
+- [x] 8.1 Implement containment-relationship construction across the full chain (Repository→Project→Module→Package→Type[→Method]) directly from Repository Evidence's own containment. Depends on: 7.1–7.7.
+- [x] 8.2 Add containment-traversal tests, including the unmanaged-Project and default-Module cases. Depends on: 8.1.
 
 ## 9. File-Location Handling
 
