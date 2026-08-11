@@ -9,6 +9,8 @@ tool.
 
 See [`openspec/project.md`](openspec/project.md) for the full project
 vision, core principles, functional scope, and technology direction.
+See [`docs/architecture.md`](docs/architecture.md) for architecture
+and design-flow diagrams of what's actually implemented so far.
 
 ## Development Methodology
 
@@ -35,6 +37,11 @@ aip-core/                 # Foundational domain models: the Canonical
 aip-csm-builder/           # Deterministic transformation of Repository
                            # Evidence into observed CSM knowledge
                            # (depends on aip-core only)
+scripts/                 # check-module-dependencies.sh — the
+                           # dependency-graph guard bound to
+                           # aip-csm-builder's `mvn verify`
+docs/
+└── architecture.md       # Architecture and design-flow diagrams
 
 openspec/
 ├── project.md          # Project vision, principles, and scope
@@ -65,10 +72,19 @@ for the sequencing decision and
 [`openspec/changes/implement-csm-builder/design.md`](openspec/changes/implement-csm-builder/design.md)
 for the resulting module architecture.
 
-Initial Java/Maven scaffolding exists (`aip-core`, `aip-csm-builder`);
-domain model and transformation logic implementation is in progress —
-see [`openspec/changes/implement-csm-builder/tasks.md`](openspec/changes/implement-csm-builder/tasks.md)
-for current progress.
+**Implementation progress: 34/91 tasks complete** (Sections 1–7 of
+[`tasks.md`](openspec/changes/implement-csm-builder/tasks.md)):
+Maven module scaffolding with an enforced `aip-csm-builder → aip-core`
+dependency guard; the full CSM domain model (`aip.core.csm`) and
+Repository Evidence contract (`aip.core.evidence`); the Mapping
+Orchestrator, Mapper contract, and registry (`aip.csmbuilder.mapping`);
+deterministic identity derivation (`aip.csmbuilder.identity`);
+`observed`-only provenance construction and enforcement
+(`aip.csmbuilder.provenance`); and the six structural entity Mappers
+— Repository, Project, Module, Package, Type, Method
+(`aip.csmbuilder.mapper`). 59 tests pass across both modules. See
+[`docs/architecture.md`](docs/architecture.md) for how these pieces
+fit together, and `tasks.md` for what's next.
 
 ## Contributing
 
