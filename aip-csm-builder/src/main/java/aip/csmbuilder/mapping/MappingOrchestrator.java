@@ -54,6 +54,15 @@ import java.util.Optional;
  * Mapper dispatch populated — it does not depend on
  * {@link DependencyRelationshipBuilder}'s output, though it
  * conventionally runs after it.
+ *
+ * <p>{@link ExcludedRelationshipTypeGuard} verifies the final
+ * accumulated result before it is returned, guarding the {@code
+ * implementation/extension}/{@code invocation} relationship-type
+ * exclusion (tasks.md 13.2) the same way {@link EvidenceKindMapperRegistry}
+ * guards the {@code ConfigFile}/{@code ConfigReference} exclusion at
+ * registration time (tasks.md 13.1) — two different points in this
+ * class's lifecycle, since one is a registration-time property and the
+ * other is a property of what was actually constructed.
  */
 public final class MappingOrchestrator {
 
@@ -116,6 +125,8 @@ public final class MappingOrchestrator {
     MappingResult externalSystemResult =
         ExternalSystemRelationshipBuilder.build(evidenceModel, resolvedIds, constructionTimestamp);
     accumulated = accumulated.merge(externalSystemResult);
+
+    ExcludedRelationshipTypeGuard.verify(accumulated);
 
     return accumulated;
   }

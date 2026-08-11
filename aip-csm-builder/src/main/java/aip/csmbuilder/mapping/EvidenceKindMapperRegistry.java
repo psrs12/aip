@@ -24,11 +24,31 @@ import java.util.Set;
  */
 public final class EvidenceKindMapperRegistry {
 
+  /**
+   * Evidence kinds a Mapper may never be registered for, per {@code
+   * Exclusion of Configuration Reference Representation}: "CSM Builder
+   * SHALL NOT construct a CSM element or relationship from a {@code
+   * ConfigFile} or {@code ConfigReference} Evidence Item." Enforced
+   * here, at registration time, rather than left to be an accidental
+   * property of which Mappers happen to be wired up — a Mapper
+   * mistakenly written for one of these kinds fails loudly and
+   * immediately instead of silently producing excluded CSM content
+   * (tasks.md 13.1).
+   */
+  private static final Set<EvidenceKind> EXCLUDED_KINDS =
+      Set.of(EvidenceKind.CONFIG_FILE, EvidenceKind.CONFIG_REFERENCE);
+
   private final Map<EvidenceKind, EvidenceKindMapper> mappersByKind = new LinkedHashMap<>();
 
   public void register(EvidenceKindMapper mapper) {
     Objects.requireNonNull(mapper, "mapper");
     EvidenceKind kind = mapper.supportedKind();
+    if (EXCLUDED_KINDS.contains(kind)) {
+      throw new IllegalArgumentException(
+          "Evidence kind " + kind + " is permanently excluded from CSM representation (see"
+              + " 'Exclusion of Configuration Reference Representation'); no Mapper may ever be"
+              + " registered for it");
+    }
     if (mappersByKind.containsKey(kind)) {
       throw new IllegalStateException(
           "a Mapper is already registered for Evidence kind " + kind + "; registering a second"

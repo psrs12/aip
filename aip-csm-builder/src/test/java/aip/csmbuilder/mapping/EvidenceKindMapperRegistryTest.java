@@ -37,4 +37,26 @@ class EvidenceKindMapperRegistryTest {
         IllegalStateException.class,
         () -> registry.register(new RecordingTestMapper(EvidenceKind.MODULE, 2)));
   }
+
+  @Test
+  void registeringAMapperForConfigFileIsRejected() {
+    // 13.1: ConfigFile/ConfigReference are permanently excluded from
+    // CSM representation - a Mapper mistakenly written for either kind
+    // must fail loudly at registration time, not silently produce
+    // excluded CSM content.
+    EvidenceKindMapperRegistry registry = new EvidenceKindMapperRegistry();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> registry.register(new RecordingTestMapper(EvidenceKind.CONFIG_FILE, 1)));
+  }
+
+  @Test
+  void registeringAMapperForConfigReferenceIsRejected() {
+    EvidenceKindMapperRegistry registry = new EvidenceKindMapperRegistry();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> registry.register(new RecordingTestMapper(EvidenceKind.CONFIG_REFERENCE, 1)));
+  }
 }

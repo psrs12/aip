@@ -87,9 +87,9 @@
 
 ## 13. Explicit Exclusions
 
-- [ ] 13.1 Verify no Mapper is ever registered for `ConfigFile`/`ConfigReference` Evidence kinds; add a construction-time guard that fails loudly if one is. Depends on: 4.2.
-- [ ] 13.2 Add a guard/test proving CSM Builder never constructs an `implementation/extension` or `invocation` relationship under current evidence coverage. Depends on: 4.3.
-- [ ] 13.3 Document, in code and in the traceability matrix (Section 23), the "future evidence coverage extends via new Mapper registration only" path. Depends on: 13.1, 13.2.
+- [x] 13.1 Verify no Mapper is ever registered for `ConfigFile`/`ConfigReference` Evidence kinds; add a construction-time guard that fails loudly if one is. Depends on: 4.2.
+- [x] 13.2 Add a guard/test proving CSM Builder never constructs an `implementation/extension` or `invocation` relationship under current evidence coverage. Depends on: 4.3.
+- [ ] 13.3 Document, in code and in the traceability matrix (Section 23), the "future evidence coverage extends via new Mapper registration only" path. Depends on: 13.1, 13.2. (Code documentation done — see `EvidenceKindMapperRegistry` and `ExcludedRelationshipTypeGuard` javadoc; traceability matrix itself is built in Section 23.)
 
 ## 14. Partial and Failed Evidence Handling
 
