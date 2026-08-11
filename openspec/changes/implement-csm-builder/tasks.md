@@ -99,10 +99,10 @@
 
 ## 15. Snapshot Persistence Abstraction and Filesystem Implementation
 
-- [ ] 15.1 Define a Snapshot Store abstraction (interface) so the persistence mechanism can be replaced later without changing CSM Builder's construction logic (invariant 5, `design.md` Decision 2). Depends on: 4.3.
-- [ ] 15.2 Implement the filesystem-based Snapshot Store: one immutable directory per snapshot, keyed by repository identifier and a monotonically increasing sequence number. Depends on: 15.1.
-- [ ] 15.3 Implement the Snapshot Manifest (CSM element identity → Mapper/Mapper-version/originating-evidence-identity/content-location index). Depends on: 15.2.
-- [ ] 15.4 Add tests, written against the Snapshot Store abstraction (not the filesystem implementation directly), confirming multiple runs produce distinguishable snapshots and prior snapshots remain retrievable and untouched. Depends on: 15.1, 15.2, 15.3.
+- [x] 15.1 Define a Snapshot Store abstraction (interface) so the persistence mechanism can be replaced later without changing CSM Builder's construction logic (invariant 5, `design.md` Decision 2). Depends on: 4.3.
+- [x] 15.2 Implement the filesystem-based Snapshot Store: one immutable directory per snapshot, keyed by repository identifier and a monotonically increasing sequence number. Depends on: 15.1.
+- [x] 15.3 Implement the Snapshot Manifest (CSM element identity → Mapper/Mapper-version/originating-evidence-identity/content-location index). Depends on: 15.2.
+- [x] 15.4 Add tests, written against the Snapshot Store abstraction (not the filesystem implementation directly), confirming multiple runs produce distinguishable snapshots and prior snapshots remain retrievable and untouched. Depends on: 15.1, 15.2, 15.3.
 
 ## 16. Incremental Re-derivation
 

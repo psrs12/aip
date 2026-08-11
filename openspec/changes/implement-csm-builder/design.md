@@ -402,6 +402,56 @@ consumer-identifying facts — at that point, a target becomes populated
 only by resolving to CSM content that already exists from that other
 evidence, never fabricated here.
 
+### 8. Snapshot Manifest Producer Attribution and Content Format
+
+**Problem:** Decision 2's Snapshot Manifest records, per element, "the
+Evidence-Kind Mapper and Mapper version that produced it." That phrase
+implicitly assumes every CSM element comes from a registered {@code
+EvidenceKindMapper} — true for every element built through {@link
+aip.csmbuilder.mapping.MappingOrchestrator}'s per-item dispatch, but
+not for `External System` elements, which `ExternalSystemRelationshipBuilder`
+constructs directly (Decision 7's predecessor, Section 11) precisely
+*because* they don't fit that per-item model. Decision 2 also left the
+"structured, human-readable documents" content format unspecified
+beyond "one file or one JSON-Lines stream ... is sufficient for a first
+cut."
+
+**Decision (producer attribution):** the Manifest's per-element
+producer field is a plain string identifier (`MapperAttribution.mapperIdentifier`),
+not literally an `EvidenceKindMapper` reference — a registered Mapper
+uses its `supportedKind()` name, and a non-Mapper producer (currently
+only `ExternalSystemRelationshipBuilder`) uses its own fixed identifier
+(`"EXTERNAL_SYSTEM"`). This generalizes Decision 2's intent (know what
+produced an element, and at what version, for future re-derivation
+eligibility checks — Section 17) without forcing External System
+construction through an interface it was deliberately designed not to
+use.
+
+**Decision (content format):** tab-delimited lines, one per element or
+relationship, with a small custom escaping scheme (backslash, tab,
+newline, CR, `=`, `;`, `,` — see `TextEncoding`) rather than JSON.
+Chosen over JSON-Lines specifically to avoid introducing a JSON library
+dependency into `aip-csm-builder`, which per the module's own dependency
+guard (tasks.md 1.2-1.3) may depend on `aip-core` only — see `Dependency
+Discipline` in the top-level development instructions ("prefer the
+smallest appropriate dependency... avoid placing unrelated dependencies").
+A hand-rolled JSON codec was considered and rejected as more code and
+more risk (a bespoke parser) for no behavioral benefit over a simpler
+delimited format, given `SnapshotStore` already isolates every caller
+from this choice — it can be swapped for a real JSON library (in a
+future module boundary that permits one) without touching `aip.csmbuilder.mapping`
+or any Mapper.
+
+**Scope note:** this change does not wire `MappingOrchestrator`'s
+output into `SnapshotStore.write` — building the `MapperAttribution`
+map for every element `MappingOrchestrator` produces (registered
+Mappers plus `ExternalSystemRelationshipBuilder`) is deferred to
+whichever future task actually needs it (Section 16's incremental
+scoping is the first consumer). Section 15's own tests exercise
+`SnapshotStore` against hand-built `SnapshotContent` fixtures instead,
+matching tasks.md 15.4's own wording ("written against the Snapshot
+Store abstraction").
+
 ## Risks / Trade-offs
 
 - [Co-locating the CSM and Evidence domain models in `aip-core`
