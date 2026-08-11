@@ -37,9 +37,11 @@ aip-core/                 # Foundational domain models: the Canonical
 aip-csm-builder/           # Deterministic transformation of Repository
                            # Evidence into observed CSM knowledge
                            # (depends on aip-core only)
-scripts/                 # check-module-dependencies.sh — the
-                           # dependency-graph guard bound to
-                           # aip-csm-builder's `mvn verify`
+scripts/                 # Architectural guard scripts bound to `mvn
+                           # verify` — dependency graph, fixture scope,
+                           # test naming, evidence-type uniqueness,
+                           # AI/heuristic-import exclusion, excluded-
+                           # construction exclusion
 docs/
 └── architecture.md       # Architecture and design-flow diagrams
 
@@ -51,9 +53,10 @@ openspec/
 │   ├── software-repository-understanding/
 │   └── csm-builder/
 └── changes/              # In-flight and archived change proposals
-    ├── implement-csm-builder/   # Active — implementation in progress
     └── archive/
-        └── <date>-<change-name>/
+        ├── 2026-08-10-define-csm-builder/
+        ├── 2026-08-10-define-software-repository-understanding/
+        └── 2026-08-11-implement-csm-builder/   # tasks.md, traceability.md, invariants.md
 ```
 
 ## Current Status
@@ -62,29 +65,33 @@ openspec/
 |---|---|
 | Canonical Software Model (CSM) | Specified and archived — see [`openspec/specs/canonical-software-model/spec.md`](openspec/specs/canonical-software-model/spec.md) |
 | Software Repository Understanding | Specified and archived (not yet implemented) — see [`openspec/specs/software-repository-understanding/spec.md`](openspec/specs/software-repository-understanding/spec.md) |
-| CSM Builder | Specified and archived; **implementation in progress** — see [`openspec/specs/csm-builder/spec.md`](openspec/specs/csm-builder/spec.md) and the active [`implement-csm-builder`](openspec/changes/implement-csm-builder/) change |
+| CSM Builder | Specified, archived, and **implemented** — see [`openspec/specs/csm-builder/spec.md`](openspec/specs/csm-builder/spec.md) and the archived [`implement-csm-builder`](openspec/changes/archive/2026-08-11-implement-csm-builder/) change |
 
-CSM Builder's implementation proceeds independently of a Repository
+CSM Builder's implementation proceeded independently of a Repository
 Understanding implementation, against contract-faithful Repository
 Evidence fixtures — see
-[`openspec/changes/implement-csm-builder/explore.md`](openspec/changes/implement-csm-builder/explore.md)
+[`.../explore.md`](openspec/changes/archive/2026-08-11-implement-csm-builder/explore.md)
 for the sequencing decision and
-[`openspec/changes/implement-csm-builder/design.md`](openspec/changes/implement-csm-builder/design.md)
+[`.../design.md`](openspec/changes/archive/2026-08-11-implement-csm-builder/design.md)
 for the resulting module architecture.
 
-**Implementation progress: 34/91 tasks complete** (Sections 1–7 of
-[`tasks.md`](openspec/changes/implement-csm-builder/tasks.md)):
-Maven module scaffolding with an enforced `aip-csm-builder → aip-core`
-dependency guard; the full CSM domain model (`aip.core.csm`) and
-Repository Evidence contract (`aip.core.evidence`); the Mapping
-Orchestrator, Mapper contract, and registry (`aip.csmbuilder.mapping`);
-deterministic identity derivation (`aip.csmbuilder.identity`);
-`observed`-only provenance construction and enforcement
-(`aip.csmbuilder.provenance`); and the six structural entity Mappers
-— Repository, Project, Module, Package, Type, Method
-(`aip.csmbuilder.mapper`). 59 tests pass across both modules. See
-[`docs/architecture.md`](docs/architecture.md) for how these pieces
-fit together, and `tasks.md` for what's next.
+**Implementation complete: 92/92 tasks** (all 24 sections of
+[`tasks.md`](openspec/changes/archive/2026-08-11-implement-csm-builder/tasks.md)):
+the full CSM domain model (`aip.core.csm`) and Repository Evidence
+contract (`aip.core.evidence`) in `aip-core`; and in `aip-csm-builder`,
+the Mapping Orchestrator with incremental re-derivation and Mapper
+versioning (`aip.csmbuilder.mapping`), deterministic identity
+derivation (`aip.csmbuilder.identity`), `observed`-only provenance
+construction and enforcement (`aip.csmbuilder.provenance`), seven
+structural/relational Mappers (`aip.csmbuilder.mapper`), a swappable
+dependency-kind classifier (`aip.csmbuilder.dependency`), a validated
+and persisted snapshot layer (`aip.csmbuilder.snapshot`), and a
+test-only fixture-building API (`aip.csmbuilder.test.fixtures`). 166
+tests and 6 architectural build guards pass under `mvn verify` across
+both modules. See [`docs/architecture.md`](docs/architecture.md) for
+how these pieces fit together, and
+[`.../traceability.md`](openspec/changes/archive/2026-08-11-implement-csm-builder/traceability.md)
+for the full requirement/scenario-to-test mapping.
 
 ## Contributing
 
