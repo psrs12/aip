@@ -131,8 +131,8 @@
 
 ## 20. Extension Mechanism Verification
 
-- [ ] 20.1 Confirm and document that registering a new Evidence-Kind Mapper requires no change to identity-derivation, provenance-construction, or incremental-scoping mechanisms. Depends on: 4.2, 5.1–5.3, 6.1, 16.1.
-- [ ] 20.2 Add a test registering a stub/no-op Mapper for a hypothetical new Evidence kind, confirming core mechanisms are unaffected. Depends on: 20.1.
+- [x] 20.1 Confirm and document that registering a new Evidence-Kind Mapper requires no change to identity-derivation, provenance-construction, or incremental-scoping mechanisms. Depends on: 4.2, 5.1–5.3, 6.1, 16.1.
+- [x] 20.2 Add a test registering a stub/no-op Mapper for a hypothetical new Evidence kind, confirming core mechanisms are unaffected. Depends on: 20.1.
 
 ## 21. Fixture Layer
 
