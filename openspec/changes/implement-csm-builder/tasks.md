@@ -7,12 +7,12 @@
 
 ## 2. `aip-core`: CSM Domain Model
 
-- [ ] 2.1 Implement the `aip.core.csm` package: CSM entity kinds (`Repository`, `Project`, `Module`, `Package`, `Type`, `Method`, `Architecture Component`, `External System`) per `canonical-software-model/spec.md`'s vocabulary. Depends on: 1.1.
-- [ ] 2.2 Implement the CSM relationship-type vocabulary (containment, dependency, implementation/extension, invocation, exposure/consumption, integration, composition, boundary/constraint) as a closed, versioned set. Depends on: 2.1.
-- [ ] 2.3 Implement the Structured Provenance Record type and the closed provenance-category enumeration (`observed`/`declared`/`inferred`). Depends on: 2.1.
-- [ ] 2.4 Implement the confidence representation (`HIGH`/`MEDIUM`/`LOW`), reserved for `inferred` elements — present in the domain model for completeness, not exercised by CSM Builder itself. Depends on: 2.3.
-- [ ] 2.5 Implement CSM element/relationship identity types and the native-evidence-attribute-bag mechanism. Depends on: 2.1, 2.2.
-- [ ] 2.6 Add tests confirming the CSM domain model's vocabulary is closed to exactly what `canonical-software-model/spec.md` defines — no accidental extra entity or relationship kind. Depends on: 2.1, 2.2.
+- [x] 2.1 Implement the `aip.core.csm` package: CSM entity kinds (`Repository`, `Project`, `Module`, `Package`, `Type`, `Method`, `Architecture Component`, `External System`) per `canonical-software-model/spec.md`'s vocabulary. Depends on: 1.1.
+- [x] 2.2 Implement the CSM relationship-type vocabulary (containment, dependency, implementation/extension, invocation, exposure/consumption, integration, composition, boundary/constraint) as a closed, versioned set. Depends on: 2.1.
+- [x] 2.3 Implement the Structured Provenance Record type and the closed provenance-category enumeration (`observed`/`declared`/`inferred`). Depends on: 2.1.
+- [x] 2.4 Implement the confidence representation (`HIGH`/`MEDIUM`/`LOW`), reserved for `inferred` elements — present in the domain model for completeness, not exercised by CSM Builder itself. Depends on: 2.3.
+- [x] 2.5 Implement CSM element/relationship identity types and the native-evidence-attribute-bag mechanism. Depends on: 2.1, 2.2.
+- [x] 2.6 Add tests confirming the CSM domain model's vocabulary is closed to exactly what `canonical-software-model/spec.md` defines — no accidental extra entity or relationship kind. Depends on: 2.1, 2.2.
 
 ## 3. `aip-core`: Repository Evidence Contract
 
