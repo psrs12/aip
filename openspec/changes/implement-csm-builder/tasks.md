@@ -106,9 +106,9 @@
 
 ## 16. Incremental Re-derivation
 
-- [ ] 16.1 Implement per-run construction scoping keyed to Repository Evidence's change-status classification: `UNCHANGED`-derived elements carried forward without re-invoking their Mapper; `ADDED`/`MODIFIED`-derived elements (re)constructed. Depends on: 15.3.
-- [ ] 16.2 Implement omission of a CSM element from the new snapshot once its sole originating evidence's change status is `REMOVED`, without waiting for the `PURGED` lifecycle state. Depends on: 16.1.
-- [ ] 16.3 Add tests covering unchanged, changed, removed, and `TOMBSTONED`-but-not-yet-`PURGED` cases. Depends on: 16.1, 16.2.
+- [x] 16.1 Implement per-run construction scoping keyed to Repository Evidence's change-status classification: `UNCHANGED`-derived elements carried forward without re-invoking their Mapper; `ADDED`/`MODIFIED`-derived elements (re)constructed. Depends on: 15.3.
+- [x] 16.2 Implement omission of a CSM element from the new snapshot once its sole originating evidence's change status is `REMOVED`, without waiting for the `PURGED` lifecycle state. Depends on: 16.1.
+- [x] 16.3 Add tests covering unchanged, changed, removed, and `TOMBSTONED`-but-not-yet-`PURGED` cases. Depends on: 16.1, 16.2.
 
 ## 17. CSM Builder Mapper Versioning
 

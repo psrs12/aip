@@ -452,6 +452,42 @@ scoping is the first consumer). Section 15's own tests exercise
 matching tasks.md 15.4's own wording ("written against the Snapshot
 Store abstraction").
 
+### 9. Incremental Scoping's Interface to a Prior Snapshot
+
+**Problem:** `Incremental Snapshot Scope` requires carrying an {@code
+UNCHANGED} Evidence Item's CSM element forward "without re-invoking
+[its] Mapper" — which means `MappingOrchestrator` needs the *previous*
+construction run's element for that identity. But Decision 8's own
+`snapshot` package `package-info.java` states `aip.csmbuilder.mapping`
+never depends on `aip.csmbuilder.snapshot`. Reaching into a real
+`Snapshot` directly from `MappingOrchestrator` would violate that.
+
+**Decision:** `aip.csmbuilder.mapping` defines its own minimal
+interface, `PriorElementLookup` (`EvidenceId -> Optional<CsmElement>`),
+and depends on nothing more than that. This is the smallest fact
+incremental scoping actually needs; it says nothing about snapshots,
+manifests, or storage. `MappingOrchestrator` gains a new `construct`
+overload taking a `Map<EvidenceId, ChangeStatus>` and a
+`PriorElementLookup`; the existing single-argument `construct` remains
+as the ordinary case (every item defaults to `ADDED`, `PriorElementLookup.none()`).
+This preserves the layering Decision 8 already committed to: `mapping`
+(construction) stays the core, independent of `snapshot` (persistence);
+`snapshot` MAY depend on `mapping` to implement `PriorElementLookup`
+against a real `Snapshot`, never the reverse.
+
+**Scope note:** this change does not add the real `Snapshot`-backed
+`PriorElementLookup` implementation — doing so requires parsing a
+`ProvenanceRecord.sourceReference()` string back into an `EvidenceId`,
+which is a real (if small) piece of new surface with its own edge
+cases (e.g. a scope key that itself contains the `:` separator) that
+no task in Section 16 actually requires solving yet. Section 16's own
+tests exercise `MappingOrchestrator`'s incremental `construct` overload
+against a hand-built, in-memory `PriorElementLookup`, matching tasks.md
+16.3's own wording. Wiring a real snapshot in is deferred again, to
+whichever future task first needs a genuine end-to-end incremental run
+(most plausibly a future CLI/application entry point, or Section 23's
+end-to-end fixture tests if they choose to exercise this path).
+
 ## Risks / Trade-offs
 
 - [Co-locating the CSM and Evidence domain models in `aip-core`
