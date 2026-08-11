@@ -84,6 +84,24 @@
               </arguments>
             </configuration>
           </execution>
+          <!--
+            Test-naming guard (design.md Decision 6; tasks.md 22.2):
+            fails the build if any test file name implies real-pipeline
+            Repository Understanding integration coverage (invariant 8).
+          -->
+          <execution>
+            <id>check-test-naming</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-test-naming.sh</executable>
+              <arguments>
+                <argument>aip-csm-builder</argument>
+              </arguments>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

@@ -343,6 +343,34 @@ even though it isn't written yet, prevents the seam from being
 improvised inconsistently whenever RU implementation eventually
 happens.
 
+**Addendum (Section 22): how this convention actually landed.**
+`MappingOrchestratorTest` and `EvidenceKindMapperRegistryTest` are this
+codebase's realization of the "contract tests" category — exercising
+Mapper/Registry/Orchestrator dispatch obligations (deterministic order,
+`ProvenanceGuard` enforcement regardless of implementation, skip-if-
+unregistered) using `RecordingTestMapper` and inline anonymous Mappers,
+never a real domain Mapper. The illustrative name `EvidenceKindMapperContractTest`
+this decision originally suggested was never literally used; the
+substance it describes is what matters, and review confirmed these
+files satisfy it.
+
+`FixtureScenariosTest` (Section 21) is deliberately **not** a `*FixtureTest`/
+`*FixtureEndToEndTest` — it is an ordinary unit test of the fixture-building
+code itself (confirming `FixtureScenarios`' entries are well-formed and
+exercisable), not a claim of end-to-end CSM Builder behavior coverage.
+The real fixture-based end-to-end tests this naming convention reserves
+that suffix for are Section 23's own deliverable (tasks.md 23.2).
+
+The reserved `RepositoryToCsmPipelineIntegrationTest` (tasks.md 22.3)
+now exists as a real, compiling file at
+`aip-csm-builder/src/test/java/aip/csmbuilder/integration/` — a
+private-constructor class with no `@Test` methods, so it is discovered
+by Surefire's naming pattern but contributes nothing to the test run
+(confirmed: no surefire report is generated for it at all). A new
+`scripts/check-test-naming.sh`, mirroring the existing dependency-graph
+and fixture-scope guards, mechanically enforces invariant 8 across
+every other test file name.
+
 ### 7. Exposure/Consumption Relationship Target Representation
 
 **Problem:** The archived `csm-builder` specification's `API Contract

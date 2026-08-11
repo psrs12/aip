@@ -142,9 +142,9 @@
 
 ## 22. Test Organization, Naming, and Reserved Integration Seam
 
-- [ ] 22.1 Establish package/naming conventions: unit tests, `EvidenceKindMapperContractTest`-style contract tests, and `*FixtureTest`/`*FixtureEndToEndTest` fixture-based end-to-end tests. Depends on: 21.1.
-- [ ] 22.2 Add a naming-convention lint/CI check rejecting any test name containing "RepositoryUnderstanding" or "RU" in a way that implies real-pipeline integration coverage (invariant 8). Depends on: 22.1.
-- [ ] 22.3 Reserve the future `RepositoryToCsmPipelineIntegrationTest` name and location with a documented pending-work marker (no test body), referencing the future `implement-software-repository-understanding` change (invariants 8, 9). Depends on: 22.1.
+- [x] 22.1 Establish package/naming conventions: unit tests, `EvidenceKindMapperContractTest`-style contract tests, and `*FixtureTest`/`*FixtureEndToEndTest` fixture-based end-to-end tests. Depends on: 21.1. (Realized as `MappingOrchestratorTest`/`EvidenceKindMapperRegistryTest` for the contract-test category — see `design.md` Decision 6 addendum.)
+- [x] 22.2 Add a naming-convention lint/CI check rejecting any test name containing "RepositoryUnderstanding" or "RU" in a way that implies real-pipeline integration coverage (invariant 8). Depends on: 22.1.
+- [x] 22.3 Reserve the future `RepositoryToCsmPipelineIntegrationTest` name and location with a documented pending-work marker (no test body), referencing the future `implement-software-repository-understanding` change (invariants 8, 9). Depends on: 22.1.
 
 ## 23. Requirement/Scenario Traceability and Coverage
 
