@@ -25,10 +25,10 @@
 
 ## 4. CSM Builder Foundational Architecture
 
-- [ ] 4.1 Define the Evidence-Kind Mapper contract/interface in `aip-csm-builder`, depending only on `aip.core.evidence` (input) and `aip.core.csm` (output) types. Depends on: 2.5, 3.6.
-- [ ] 4.2 Implement the Evidence-Kind Mapper Registry (registration API, kind-based lookup). Depends on: 4.1.
-- [ ] 4.3 Implement the Mapping Orchestrator: consumes a Repository Evidence Model (or incremental delta, see Section 16) and dispatches Evidence Items to registered Mappers in deterministic, sorted-by-identity order — sequential execution only, no concurrency infrastructure (invariant 7, `design.md` Decision 4). Depends on: 4.2.
-- [ ] 4.4 Add contract tests for the Mapper interface itself, independent of any specific Mapper implementation. Depends on: 4.1.
+- [x] 4.1 Define the Evidence-Kind Mapper contract/interface in `aip-csm-builder`, depending only on `aip.core.evidence` (input) and `aip.core.csm` (output) types. Depends on: 2.5, 3.6.
+- [x] 4.2 Implement the Evidence-Kind Mapper Registry (registration API, kind-based lookup). Depends on: 4.1.
+- [x] 4.3 Implement the Mapping Orchestrator: consumes a Repository Evidence Model (or incremental delta, see Section 16) and dispatches Evidence Items to registered Mappers in deterministic, sorted-by-identity order — sequential execution only, no concurrency infrastructure (invariant 7, `design.md` Decision 4). Depends on: 4.2.
+- [x] 4.4 Add contract tests for the Mapper interface itself, independent of any specific Mapper implementation. Depends on: 4.1.
 
 ## 5. Deterministic Identity Derivation
 
