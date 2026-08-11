@@ -555,6 +555,41 @@ tests via hand-built `CsmRelationship` fixtures (matching the archived
 spec's own example scenario: "two independent analyzer passes produce
 contradictory observed relationships for the same subject").
 
+### 11. Snapshot Validation Scope
+
+**Problem:** `Snapshot Validation Before Use` requires validating a
+constructed snapshot against the CSM's own `CSM Validation Expectations`
+before publication. That requirement's checklist has six bullets, but
+almost all of them are already unconditionally guaranteed by this
+codebase's own types (a sealed `CsmElement` hierarchy, closed
+vocabulary enums, `ProvenanceRecord`'s own constructor invariants,
+`ArchitectureComponentElement`'s own OBSERVED-provenance rejection) —
+building live runtime checks for conditions the Java type system
+already makes unreachable would be dead code.
+
+**Decision:** `aip.core.csm.CsmValidator` documents the full checklist
+in its class javadoc (so it stays visible in one place, matching the
+archived requirement's own text) but only contains one live check:
+`BOUNDARY_CONSTRAINT`-typed relationships (the CSM's representation of
+an Architectural Boundary) must never carry `OBSERVED` provenance — the
+one bullet with no existing constructor-level guard, since
+`CsmRelationship` has no equivalent of `ArchitectureComponentElement`'s
+own restriction. `aip.csmbuilder.snapshot.SnapshotPublisher` applies it
+as a gate in front of `SnapshotStore.write` — an invalid snapshot is
+never written at all (not written, then flagged), keeping `SnapshotStore`
+itself validation-agnostic per Decision 2.
+
+**Consequence:** like Section 18's `ConflictedSubjects`, this is
+real-but-currently-unexercised-by-CSM-Builder's-own-pipeline
+integration — CSM Builder never constructs a `BOUNDARY_CONSTRAINT`
+relationship at all (tasks.md 24.4), so every snapshot CSM Builder
+itself produces today passes trivially. The validator and publisher
+exist so that (a) the full CSM Validation Expectations checklist is
+documented and enforced somewhere real, and (b) a future producer that
+does construct declared/inferred Architecture Component or Architectural
+Boundary content has an existing gate to plug into, rather than each
+future capability needing to reinvent one.
+
 ## Risks / Trade-offs
 
 - [Co-locating the CSM and Evidence domain models in `aip-core`

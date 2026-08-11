@@ -125,9 +125,9 @@
 
 ## 19. Snapshot Validation
 
-- [ ] 19.1 Implement a validator applying the CSM domain model's validation expectations to a constructed snapshot before it is considered usable. Depends on: 15.2, 2.1–2.5.
-- [ ] 19.2 Implement non-publication of a snapshot that fails validation. Depends on: 19.1.
-- [ ] 19.3 Add tests for both a passing and a failing validation outcome. Depends on: 19.1, 19.2.
+- [x] 19.1 Implement a validator applying the CSM domain model's validation expectations to a constructed snapshot before it is considered usable. Depends on: 15.2, 2.1–2.5.
+- [x] 19.2 Implement non-publication of a snapshot that fails validation. Depends on: 19.1.
+- [x] 19.3 Add tests for both a passing and a failing validation outcome. Depends on: 19.1, 19.2.
 
 ## 20. Extension Mechanism Verification
 
