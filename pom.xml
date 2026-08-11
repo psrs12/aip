@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>aip</groupId>
+  <artifactId>aip-parent</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Architecture Intelligence Platform (AIP)</name>
+  <description>
+    Parent aggregator for AIP's Java modules. See openspec/project.md
+    for the full project vision and openspec/specs/ for the approved
+    specifications each module implements.
+  </description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>21</maven.compiler.release>
+    <junit.jupiter.version>5.11.4</junit.jupiter.version>
+    <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
+  </properties>
+
+  <modules>
+    <module>aip-core</module>
+    <module>aip-csm-builder</module>
+  </modules>
+
+  <!--
+    Shared test infrastructure (tasks.md 1.4): every module uses
+    JUnit 5 for unit/contract/fixture-based tests, declared here once
+    so each module's own pom only needs a bare, versionless
+    <dependency> declaration.
+  -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <!--
+        Evidence-contract uniqueness guard (tasks.md 3.6, 24.2;
+        invariant 3): fails the reactor build if any Java source file,
+        in any module, declares a class/record/interface/enum with the
+        same name as one of aip.core.evidence's own Repository Evidence
+        contract types, outside that package. Bound to the parent
+        (reactor root) rather than any one module's pom, since it scans
+        every module's src/main and src/test.
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>check-no-duplicate-evidence-types</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/scripts/check-no-duplicate-evidence-types.sh</executable>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

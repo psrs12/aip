@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>aip</groupId>
+    <artifactId>aip-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>aip-csm-builder</artifactId>
+  <packaging>jar</packaging>
+
+  <name>aip-csm-builder</name>
+  <description>
+    Deterministic, evidence-driven transformation of the Repository
+    Evidence contract into observed Canonical Software Model knowledge.
+    See openspec/specs/csm-builder/spec.md. Depends on aip-core only —
+    per design.md Decision 1 and the project's invariants, this module
+    SHALL NOT depend on aip-analyzer or any Repository Understanding
+    implementation module.
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>aip</groupId>
+      <artifactId>aip-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!--
+        Dependency-graph guard (design.md Decision 1; tasks.md 1.3):
+        fails the build if this module's resolved dependency graph
+        ever contains anything other than aip-core — in particular,
+        aip-analyzer or a future Repository Understanding
+        implementation module.
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>check-module-dependencies</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-module-dependencies.sh</executable>
+              <arguments>
+                <argument>aip-csm-builder</argument>
+                <argument>aip:aip-core</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <!--
+            Fixture-package scope guard (design.md Decision 5; tasks.md
+            21.2): fails the build if any production source under
+            src/main/java references the test-only fixture-building
+            package (invariant 4).
+          -->
+          <execution>
+            <id>check-fixture-package-scope</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-fixture-package-scope.sh</executable>
+              <arguments>
+                <argument>aip-csm-builder</argument>
+                <argument>aip.csmbuilder.test.fixtures</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <!--
+            Test-naming guard (design.md Decision 6; tasks.md 22.2):
+            fails the build if any test file name implies real-pipeline
+            Repository Understanding integration coverage (invariant 8).
+          -->
+          <execution>
+            <id>check-test-naming</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-test-naming.sh</executable>
+              <arguments>
+                <argument>aip-csm-builder</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <!--
+            No-AI/heuristic-import guard (tasks.md 24.3): fails the
+            build if production source imports a randomness API or a
+            known AI/LLM SDK package.
+          -->
+          <execution>
+            <id>check-no-ai-heuristic-imports</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-no-ai-heuristic-imports.sh</executable>
+              <arguments>
+                <argument>aip-csm-builder</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <!--
+            No-excluded-construction guard (tasks.md 24.4): fails the
+            build if aip.csmbuilder.mapper/mapping ever construct an
+            Architecture Component or Architectural Boundary.
+          -->
+          <execution>
+            <id>check-no-excluded-construction</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-no-excluded-construction.sh</executable>
+              <arguments>
+                <argument>aip-csm-builder</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
