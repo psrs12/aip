@@ -93,9 +93,9 @@
 
 ## 14. Partial and Failed Evidence Handling
 
-- [ ] 14.1 Implement CSM element construction from `partial` Repository Evidence using whatever structure was successfully captured, with `observed` provenance and no incompleteness marker. Depends on: 6.1.
-- [ ] 14.2 Implement non-construction for `failed` Repository Evidence Items. Depends on: 4.3.
-- [ ] 14.3 Add tests confirming a `partial` evidence item yields a CSM element indistinguishable in shape/provenance from one built from `complete` evidence, and a `failed` evidence item yields none. Depends on: 14.1, 14.2.
+- [x] 14.1 Implement CSM element construction from `partial` Repository Evidence using whatever structure was successfully captured, with `observed` provenance and no incompleteness marker. Depends on: 6.1.
+- [x] 14.2 Implement non-construction for `failed` Repository Evidence Items. Depends on: 4.3.
+- [x] 14.3 Add tests confirming a `partial` evidence item yields a CSM element indistinguishable in shape/provenance from one built from `complete` evidence, and a `failed` evidence item yields none. Depends on: 14.1, 14.2.
 
 ## 15. Snapshot Persistence Abstraction and Filesystem Implementation
 

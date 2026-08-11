@@ -34,6 +34,15 @@ import java.util.Optional;
  * realized: by simply never registering a Mapper for those kinds,
  * rather than this class special-casing them.
  *
+ * <p>An Evidence Item whose discovery outcome is {@code failed} is
+ * likewise skipped before dispatch, per {@link FailedEvidenceFilter}
+ * (tasks.md 14.2) — a {@code partial} discovery outcome is dispatched
+ * normally, since {@code Partial-Evidence Construction} requires
+ * constructing from whatever structure was successfully captured, with
+ * ordinary {@code observed} provenance and no incompleteness marker;
+ * no Mapper reads {@code discoveryOutcome} at all, so this falls out
+ * for free once {@code failed} items are excluded upstream.
+ *
  * <p>Every Mapper's result is verified by {@link ProvenanceGuard}
  * before being merged into the accumulated result — this holds
  * regardless of which Mapper produced it, so an individual Mapper
@@ -101,6 +110,12 @@ public final class MappingOrchestrator {
 
     MappingResult accumulated = MappingResult.empty();
     for (EvidenceItem item : orderedItems) {
+      if (!FailedEvidenceFilter.isEligible(item)) {
+        // Failed-Evidence Non-Construction (tasks.md 14.2): a `failed`
+        // discovery outcome yields no CSM element, unconditionally -
+        // not even to a Mapper that would otherwise be found for it.
+        continue;
+      }
       Optional<EvidenceKindMapper> mapper = registry.lookup(item.kind());
       if (mapper.isEmpty()) {
         continue;

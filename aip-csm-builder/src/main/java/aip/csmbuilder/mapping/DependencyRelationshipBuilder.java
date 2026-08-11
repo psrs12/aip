@@ -98,6 +98,12 @@ final class DependencyRelationshipBuilder {
       if (item.kind() != EvidenceKind.MANIFEST_DEPENDENCY_EDGE && item.kind() != EvidenceKind.IMPORT_EDGE) {
         continue;
       }
+      if (!FailedEvidenceFilter.isEligible(item)) {
+        // Failed-Evidence Non-Construction (tasks.md 14.2) applies here
+        // too: a failed ManifestDependencyEdge/ImportEdge contributes
+        // no CSM content, the same as a failed Mapper-driven item.
+        continue;
+      }
 
       String repositoryIdentifier = item.id().repositoryIdentifier();
       String sourceModuleScopeKey =

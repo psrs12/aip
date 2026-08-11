@@ -142,6 +142,12 @@ final class ExternalSystemRelationshipBuilder {
       if (item.kind() != EvidenceKind.MANIFEST_DEPENDENCY_EDGE) {
         continue;
       }
+      if (!FailedEvidenceFilter.isEligible(item)) {
+        // Failed-Evidence Non-Construction (tasks.md 14.2): a failed
+        // ManifestDependencyEdge contributes no External System or
+        // integration relationship.
+        continue;
+      }
       String repositoryIdentifier = item.id().repositoryIdentifier();
       String targetScopeKey = requireAttribute(item, EvidenceAttributeKeys.DEPENDENCY_TARGET);
       if (!resolvesInternally(repositoryIdentifier, targetScopeKey, resolvedElementIds)) {
