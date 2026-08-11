@@ -16,12 +16,12 @@
 
 ## 3. `aip-core`: Repository Evidence Contract
 
-- [ ] 3.1 Implement the `aip.core.evidence` package: the Evidence Item base type and the Evidence-kind enumeration (`Repository`, `Project`, `Module`, `Package`, `SourceUnit`, Method-level, `ManifestDependencyEdge`, `ImportEdge`, `ApiContractDeclaration`, `ConfigFile`, `ConfigReference`, `File`), per `software-repository-understanding/spec.md`. Depends on: 1.1.
-- [ ] 3.2 Implement the Evidence identity type (repository identifier, Evidence kind, scope key) and the source-location type, kept structurally distinct per the archived RU spec. Depends on: 3.1.
-- [ ] 3.3 Implement the discovery-outcome-status vocabulary (`complete`/`partial`/`failed`) and the failure-reason taxonomy. Depends on: 3.1.
-- [ ] 3.4 Implement the extraction-method-tag vocabulary. Depends on: 3.1.
-- [ ] 3.5 Implement the change-status vocabulary (`ADDED`/`UNCHANGED`/`MODIFIED`/`REMOVED`) and the lifecycle-state vocabulary (`PRESENT`/`TOMBSTONED`/`PURGED`) as two distinct, non-interchangeable types. Depends on: 3.1.
-- [ ] 3.6 Add tests confirming this is the single, authoritative Repository Evidence contract — no duplicate or parallel Evidence type exists anywhere else in the codebase (invariant 3). Depends on: 3.1–3.5.
+- [x] 3.1 Implement the `aip.core.evidence` package: the Evidence Item base type and the Evidence-kind enumeration (`Repository`, `Project`, `Module`, `Package`, `SourceUnit`, Method-level, `ManifestDependencyEdge`, `ImportEdge`, `ApiContractDeclaration`, `ConfigFile`, `ConfigReference`, `File`), per `software-repository-understanding/spec.md`. Depends on: 1.1.
+- [x] 3.2 Implement the Evidence identity type (repository identifier, Evidence kind, scope key) and the source-location type, kept structurally distinct per the archived RU spec. Depends on: 3.1.
+- [x] 3.3 Implement the discovery-outcome-status vocabulary (`complete`/`partial`/`failed`) and the failure-reason taxonomy. Depends on: 3.1.
+- [x] 3.4 Implement the extraction-method-tag vocabulary. Depends on: 3.1.
+- [x] 3.5 Implement the change-status vocabulary (`ADDED`/`UNCHANGED`/`MODIFIED`/`REMOVED`) and the lifecycle-state vocabulary (`PRESENT`/`TOMBSTONED`/`PURGED`) as two distinct, non-interchangeable types. Depends on: 3.1.
+- [x] 3.6 Add tests confirming this is the single, authoritative Repository Evidence contract — no duplicate or parallel Evidence type exists anywhere else in the codebase (invariant 3). Depends on: 3.1–3.5.
 
 ## 4. CSM Builder Foundational Architecture
 
