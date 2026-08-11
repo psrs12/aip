@@ -13,6 +13,7 @@
 - [x] 2.4 Implement the confidence representation (`HIGH`/`MEDIUM`/`LOW`), reserved for `inferred` elements — present in the domain model for completeness, not exercised by CSM Builder itself. Depends on: 2.3.
 - [x] 2.5 Implement CSM element/relationship identity types and the native-evidence-attribute-bag mechanism. Depends on: 2.1, 2.2.
 - [x] 2.6 Add tests confirming the CSM domain model's vocabulary is closed to exactly what `canonical-software-model/spec.md` defines — no accidental extra entity or relationship kind. Depends on: 2.1, 2.2.
+- [x] 2.7 (Added retroactively, discovered as a gap while implementing Section 18) Implement Subject Identification and Same-Category Conflict Marking (`Subject`, `EffectiveKnowledgeStatus`, `SubjectConflictMarker`), scoped to what CSM Builder itself can exercise — see `design.md` Decision 10 for the deliberately deferred full precedence/resolution-recording scope.
 
 ## 3. `aip-core`: Repository Evidence Contract
 
@@ -118,9 +119,9 @@
 
 ## 18. Conflict and Precedence Integration
 
-- [ ] 18.1 Integrate with the CSM domain model's existing Subject Identification and Same-Category Conflict Marking mechanism (Section 2) for conflicting `observed` assertions CSM Builder constructs. Depends on: 6.1, 2.3.
-- [ ] 18.2 Verify CSM Builder performs no conflict arbitration of its own outside that existing mechanism. Depends on: 18.1.
-- [ ] 18.3 Add a test constructing two conflicting `observed` assertions about the same subject, confirming both are preserved and the subject is marked `CONFLICTED`. Depends on: 18.1, 18.2.
+- [x] 18.1 Integrate with the CSM domain model's existing Subject Identification and Same-Category Conflict Marking mechanism (Section 2) for conflicting `observed` assertions CSM Builder constructs. Depends on: 6.1, 2.3.
+- [x] 18.2 Verify CSM Builder performs no conflict arbitration of its own outside that existing mechanism. Depends on: 18.1.
+- [x] 18.3 Add a test constructing two conflicting `observed` assertions about the same subject, confirming both are preserved and the subject is marked `CONFLICTED`. Depends on: 18.1, 18.2.
 
 ## 19. Snapshot Validation
 

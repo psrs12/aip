@@ -501,6 +501,60 @@ equals the currently registered Mapper's version"; a version mismatch
 falls through to fresh construction the same way a missing prior
 element already did — no separate re-derivation code path was needed.
 
+### 10. Subject Identification and Conflict Marking Scope
+
+**Problem:** tasks.md 18.1 says CSM Builder should "integrate with the
+CSM domain model's existing Subject Identification and Same-Category
+Conflict Marking mechanism (Section 2)" — but Section 2, as actually
+scoped and implemented (tasks 2.1-2.6), never built one. The archived
+`canonical-software-model` specification defines four related
+requirements here: Subject Identification, Non-Destructive Preservation
+of Competing Knowledge, Effective Knowledge and Precedence (the full
+`DECLARED > OBSERVED > INFERRED` computation, with an audited
+resolution-recording facility), and Same-Category Conflict Marking.
+This is a genuine tasks.md planning gap, not an intentional deferral —
+confirmed with the user before proceeding (see the Section 18
+conversation).
+
+**Decision (user-directed): build only what CSM Builder can exercise.**
+`aip-core` gains three small, general additions: `Subject` (anchor
+entity/entities + assertion-kind label, per the spec's own definition),
+`EffectiveKnowledgeStatus` (`EFFECTIVE`/`CONFLICTED`), and
+`SubjectConflictMarker` (groups same-category assertions by `Subject`,
+marks a group `CONFLICTED` when it holds more than one assertion,
+`EFFECTIVE` when exactly one — never discarding an assertion, so
+Non-Destructive Preservation holds by construction). `aip.csmbuilder.mapping`
+gains `ConflictedSubjects`, a thin query over a `MappingResult`'s
+relationships using that mechanism.
+
+**Explicitly not built:** cross-category precedence (`DECLARED >
+OBSERVED > INFERRED`) and audited conflict-resolution recording.
+Nothing in this codebase produces `declared` or `inferred` CSM content
+yet — CSM Builder itself only ever constructs `observed` content (see
+`Provenance Assignment for Constructed Knowledge`) — so there is
+nothing to reconcile `observed` against, and no resolution to audit.
+`EffectiveKnowledgeStatus`'s own javadoc records this gap explicitly.
+Building the full mechanism now, ahead of any producer of declared or
+inferred knowledge, would be exactly the "classes... simply because
+they appear useful" this project's own development instructions warn
+against. Revisit when a future change (e.g. a Declared-Knowledge
+capture mechanism, or an inference-producing agent) actually needs
+cross-category reconciliation.
+
+**Why this doesn't require CSM Builder's own construction logic to
+change:** every current relationship-construction path (Sections 8, 10,
+11) already deduplicates to at most one relationship per (source,
+target, type) — by identity, not by arbitration — so CSM Builder's own
+pipeline cannot produce a genuine same-subject conflict today. The
+mechanism is still real and integrated (not a no-op): `Subject.forRelationship`
+deliberately mirrors relationship identity's own exclusion of the
+dependency-kind qualifier (`CSM Relationship Identity Derivation`),
+which is exactly what makes "two relationships, same identity, different
+kind" a coherent, testable conflict shape — exercised in Section 18's
+tests via hand-built `CsmRelationship` fixtures (matching the archived
+spec's own example scenario: "two independent analyzer passes produce
+contradictory observed relationships for the same subject").
+
 ## Risks / Trade-offs
 
 - [Co-locating the CSM and Evidence domain models in `aip-core`
