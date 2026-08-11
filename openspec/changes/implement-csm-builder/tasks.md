@@ -45,13 +45,13 @@
 
 ## 7. Structural Entity Mappers
 
-- [ ] 7.1 Implement the `Repository` → CSM `Repository` Mapper. Depends on: 4.1, 5.1, 6.1.
-- [ ] 7.2 Implement the `Project` → CSM `Project` Mapper, including the reserved unmanaged Project case. Depends on: 7.1.
-- [ ] 7.3 Implement the `Module` → CSM `Module` Mapper, including RU's default-Module case for sub-module-less Projects. Depends on: 7.2.
-- [ ] 7.4 Implement the `Package` → CSM `Package` Mapper. Depends on: 7.3, 5.2.
-- [ ] 7.5 Implement the `SourceUnit` → CSM `Type` Mapper, mapping every native construct kind label uniformly onto `Type`. Depends on: 7.4.
-- [ ] 7.6 Implement native construct kind label preservation as a `Type` attribute. Depends on: 7.5.
-- [ ] 7.7 Implement the Method-level Evidence → CSM `Method` Mapper. Depends on: 7.5.
+- [x] 7.1 Implement the `Repository` → CSM `Repository` Mapper. Depends on: 4.1, 5.1, 6.1.
+- [x] 7.2 Implement the `Project` → CSM `Project` Mapper, including the reserved unmanaged Project case. Depends on: 7.1.
+- [x] 7.3 Implement the `Module` → CSM `Module` Mapper, including RU's default-Module case for sub-module-less Projects. Depends on: 7.2.
+- [x] 7.4 Implement the `Package` → CSM `Package` Mapper. Depends on: 7.3, 5.2.
+- [x] 7.5 Implement the `SourceUnit` → CSM `Type` Mapper, mapping every native construct kind label uniformly onto `Type`. Depends on: 7.4.
+- [x] 7.6 Implement native construct kind label preservation as a `Type` attribute. Depends on: 7.5.
+- [x] 7.7 Implement the Method-level Evidence → CSM `Method` Mapper. Depends on: 7.5.
 
 ## 8. Structural Containment Construction
 

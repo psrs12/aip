@@ -5,6 +5,8 @@ import aip.core.evidence.EvidenceId;
 import aip.core.evidence.EvidenceItem;
 import aip.core.evidence.RepositoryEvidenceModel;
 import aip.csmbuilder.provenance.ProvenanceGuard;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,9 +41,15 @@ import java.util.Optional;
 public final class MappingOrchestrator {
 
   private final EvidenceKindMapperRegistry registry;
+  private final Clock clock;
 
   public MappingOrchestrator(EvidenceKindMapperRegistry registry) {
+    this(registry, Clock.systemUTC());
+  }
+
+  public MappingOrchestrator(EvidenceKindMapperRegistry registry, Clock clock) {
     this.registry = Objects.requireNonNull(registry, "registry");
+    this.clock = Objects.requireNonNull(clock, "clock");
   }
 
   public MappingResult construct(RepositoryEvidenceModel evidenceModel) {
@@ -52,8 +60,10 @@ public final class MappingOrchestrator {
             .sorted(Comparator.comparing(item -> item.id().toString()))
             .toList();
 
+    Instant constructionTimestamp = clock.instant();
     Map<EvidenceId, CsmElementId> resolvedIds = new LinkedHashMap<>();
-    MutableMappingContext context = new MutableMappingContext(evidenceModel, resolvedIds);
+    MutableMappingContext context =
+        new MutableMappingContext(evidenceModel, resolvedIds, constructionTimestamp);
 
     MappingResult accumulated = MappingResult.empty();
     for (EvidenceItem item : orderedItems) {
@@ -73,7 +83,9 @@ public final class MappingOrchestrator {
   }
 
   private record MutableMappingContext(
-      RepositoryEvidenceModel evidenceModel, Map<EvidenceId, CsmElementId> resolvedIds)
+      RepositoryEvidenceModel evidenceModel,
+      Map<EvidenceId, CsmElementId> resolvedIds,
+      Instant constructionTimestamp)
       implements MappingContext {
 
     @Override
