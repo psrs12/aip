@@ -1,6 +1,5 @@
 package aip.csmbuilder.mapping;
 
-import aip.core.csm.CsmElement;
 import aip.core.csm.CsmElementId;
 import aip.core.csm.CsmRelationship;
 import aip.core.evidence.ChangeStatus;
@@ -80,9 +79,15 @@ import java.util.Optional;
  * Section 16): an Evidence Item classified {@code REMOVED} is skipped
  * unconditionally; one classified {@code UNCHANGED} is carried forward
  * from {@link PriorElementLookup} without invoking its Mapper, when a
- * prior element is known. {@link #construct(RepositoryEvidenceModel)}
- * is the ordinary, non-incremental case: every item defaults to {@code
- * ADDED} and no prior element is ever known.
+ * prior element is known — <em>and</em> that prior element's recorded
+ * Mapper version matches the currently registered Mapper's version
+ * ({@code CSM Builder Mapper Versioning}, tasks.md 17.2): a version
+ * change makes an otherwise-{@code UNCHANGED} element eligible for
+ * re-derivation, the one case where evidence change status alone does
+ * not determine whether a Mapper is invoked. {@link
+ * #construct(RepositoryEvidenceModel)} is the ordinary, non-incremental
+ * case: every item defaults to {@code ADDED} and no prior element is
+ * ever known.
  */
 public final class MappingOrchestrator {
 
@@ -173,23 +178,30 @@ public final class MappingOrchestrator {
       }
 
       if (changeStatus == ChangeStatus.UNCHANGED) {
-        Optional<CsmElement> carried = priorElements.find(item.id());
-        if (carried.isPresent()) {
+        Optional<PriorElementLookup.PriorElement> carried = priorElements.find(item.id());
+        if (carried.isPresent() && carried.get().mapperVersion() == mapper.get().mapperVersion()) {
           // Incremental Snapshot Scope (tasks.md 16.1): carried forward
           // exactly as previously constructed, without invoking the
-          // Mapper again.
-          resolvedIds.put(item.id(), carried.get().id());
-          accumulated = accumulated.merge(MappingResult.ofElement(carried.get()));
+          // Mapper again - but only when the Mapper that would be
+          // invoked today is the same version that produced the prior
+          // element. A version change makes it eligible for
+          // re-derivation even though the evidence itself is UNCHANGED
+          // (tasks.md 17.2), so this condition intentionally does not
+          // short-circuit on `carried.isPresent()` alone.
+          resolvedIds.put(item.id(), carried.get().element().id());
+          accumulated = accumulated.merge(MappingResult.ofElement(carried.get().element()));
           continue;
         }
-        // No prior element is known for this identity (e.g. no prior
-        // snapshot at all) - fall through and construct fresh, the
-        // same as ADDED/MODIFIED. This also covers a Mapper that
-        // produces no element at all (e.g. ApiContractMapper, which
-        // only ever produces a relationship): PriorElementLookup never
-        // has an entry for it, so it is always (re)invoked regardless
-        // of change status - Incremental Snapshot Scope's guarantee is
-        // scoped to CSM elements, not relationships.
+        // Either no prior element is known for this identity (e.g. no
+        // prior snapshot at all), or the registered Mapper's version
+        // has changed since it produced the prior element - fall
+        // through and construct fresh, the same as ADDED/MODIFIED.
+        // This also covers a Mapper that produces no element at all
+        // (e.g. ApiContractMapper, which only ever produces a
+        // relationship): PriorElementLookup never has an entry for it,
+        // so it is always (re)invoked regardless of change status -
+        // Incremental Snapshot Scope's guarantee is scoped to CSM
+        // elements, not relationships.
       }
 
       MappingResult result = mapper.get().map(item, context);

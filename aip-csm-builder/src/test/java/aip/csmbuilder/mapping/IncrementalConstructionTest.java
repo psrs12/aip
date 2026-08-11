@@ -40,7 +40,7 @@ class IncrementalConstructionTest {
   void unchangedItemIsCarriedForwardWithoutInvokingItsMapper() {
     RecordingTestMapper mapper = new RecordingTestMapper(EvidenceKind.MODULE, 1);
     CsmElement priorElement = priorElement();
-    PriorElementLookup priorElements = idToLookUp -> Optional.of(priorElement).filter(e -> idToLookUp.equals(MODULE_ID));
+    PriorElementLookup priorElements = priorLookup(priorElement, 1);
 
     MappingResult result = construct(mapper, ChangeStatus.UNCHANGED, priorElements);
 
@@ -134,6 +134,15 @@ class IncrementalConstructionTest {
 
     assertEquals(1, mapper.invocations.size());
     assertEquals(1, result.elements().size());
+  }
+
+  static PriorElementLookup priorLookup(EvidenceId evidenceId, CsmElement element, int mapperVersion) {
+    PriorElementLookup.PriorElement priorElement = new PriorElementLookup.PriorElement(element, mapperVersion);
+    return candidateId -> Optional.of(priorElement).filter(ignored -> candidateId.equals(evidenceId));
+  }
+
+  private static PriorElementLookup priorLookup(CsmElement element, int mapperVersion) {
+    return priorLookup(MODULE_ID, element, mapperVersion);
   }
 
   private MappingResult construct(RecordingTestMapper mapper, ChangeStatus changeStatus, PriorElementLookup priorElements) {

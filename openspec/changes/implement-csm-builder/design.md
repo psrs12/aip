@@ -488,6 +488,19 @@ whichever future task first needs a genuine end-to-end incremental run
 (most plausibly a future CLI/application entry point, or Section 23's
 end-to-end fixture tests if they choose to exercise this path).
 
+**Addendum (Section 17):** `PriorElementLookup.find` returns a small
+`PriorElement(CsmElement element, int mapperVersion)` pair rather than
+a bare `CsmElement`, so `CSM Builder Mapper Versioning`'s "version
+recorded for a previously constructed CSM element" (tasks.md 17.2) has
+somewhere to live without widening this interface's scope beyond what
+incremental re-derivation needs — the same fact `MapperAttribution`
+already carries at the persistence layer (Decision 8), named
+identically here. `MappingOrchestrator`'s carry-forward condition
+becomes "a prior element is known **and** its recorded Mapper version
+equals the currently registered Mapper's version"; a version mismatch
+falls through to fresh construction the same way a missing prior
+element already did — no separate re-derivation code path was needed.
+
 ## Risks / Trade-offs
 
 - [Co-locating the CSM and Evidence domain models in `aip-core`

@@ -112,9 +112,9 @@
 
 ## 17. CSM Builder Mapper Versioning
 
-- [ ] 17.1 Implement an internal, monotonically versioned identifier per Evidence-Kind Mapper. Depends on: 4.2.
-- [ ] 17.2 Implement re-derivation eligibility when a Mapper's version differs from the version recorded against a previously constructed element, independent of evidence change status. Depends on: 17.1, 16.1.
-- [ ] 17.3 Add a test simulating a Mapper version change against unchanged evidence, confirming re-derivation occurs. Depends on: 17.2.
+- [x] 17.1 Implement an internal, monotonically versioned identifier per Evidence-Kind Mapper. Depends on: 4.2. (Already in place since Section 4/7 — `EvidenceKindMapper.mapperVersion()` plus a `MAPPER_VERSION` constant on every registered Mapper.)
+- [x] 17.2 Implement re-derivation eligibility when a Mapper's version differs from the version recorded against a previously constructed element, independent of evidence change status. Depends on: 17.1, 16.1.
+- [x] 17.3 Add a test simulating a Mapper version change against unchanged evidence, confirming re-derivation occurs. Depends on: 17.2.
 
 ## 18. Conflict and Precedence Integration
 
