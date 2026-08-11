@@ -39,8 +39,8 @@ import java.util.Optional;
  * <p>Only internal (Module-to-Module) dependencies are constructed
  * here — a target that does not resolve to a known Module (an
  * unresolved external artifact coordinate) produces no relationship in
- * this section; representing it as a CSM {@code External System} is a
- * separate, later concern.
+ * this section; representing it as a CSM {@code External System} is
+ * {@link ExternalSystemRelationshipBuilder}'s concern.
  */
 final class DependencyRelationshipBuilder {
 
@@ -82,7 +82,7 @@ final class DependencyRelationshipBuilder {
               relationshipId,
               CsmRelationshipType.DEPENDENCY,
               sourceId.get(),
-              targetId.get(),
+              Optional.of(targetId.get()),
               provenance,
               NativeAttributes.empty(),
               kind));

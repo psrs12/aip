@@ -83,14 +83,13 @@ final class ContainmentRelationshipBuilder {
               constructionTimestamp);
 
       relationships.add(
-          new CsmRelationship(
+          CsmRelationship.of(
               relationshipId,
               CsmRelationshipType.CONTAINMENT,
               sourceId.get(),
               targetId.get(),
               provenance,
-              NativeAttributes.empty(),
-              Optional.empty()));
+              NativeAttributes.empty()));
     }
 
     return relationships;

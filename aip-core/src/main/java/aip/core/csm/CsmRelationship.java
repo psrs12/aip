@@ -11,6 +11,16 @@ import java.util.Optional;
  * {@link CsmElement} (see {@code Evidence and Knowledge Distinction}):
  * it always carries a {@link ProvenanceRecord}.
  *
+ * @param targetId the relationship's target entity, when one is
+ *     evidenced. Absent means "no target/consumer has been evidenced,"
+ *     never "the target is the source itself" — a consumer entity
+ *     SHALL NOT be invented merely to populate this field (see, e.g.,
+ *     {@code API Contract Relationship Construction}'s "no invented
+ *     consumer" rule in the {@code csm-builder} specification). Most
+ *     relationship types (containment, dependency, integration, ...)
+ *     are only ever constructed once both ends are known, so in
+ *     practice this is absent only for relationship types whose
+ *     originating evidence does not itself identify a target.
  * @param dependencyKind the dependency-kind qualifier — present only
  *     when {@code type} is {@link CsmRelationshipType#DEPENDENCY} and
  *     the kind was discoverable; see {@link DependencyKind}.
@@ -19,7 +29,7 @@ public record CsmRelationship(
     CsmElementId id,
     CsmRelationshipType type,
     CsmElementId sourceId,
-    CsmElementId targetId,
+    Optional<CsmElementId> targetId,
     ProvenanceRecord provenance,
     NativeAttributes nativeAttributes,
     Optional<DependencyKind> dependencyKind) {
@@ -38,7 +48,7 @@ public record CsmRelationship(
     }
   }
 
-  /** Convenience factory for a relationship carrying no dependency-kind qualifier. */
+  /** Convenience factory for a relationship with a known target and no dependency-kind qualifier. */
   public static CsmRelationship of(
       CsmElementId id,
       CsmRelationshipType type,
@@ -46,7 +56,24 @@ public record CsmRelationship(
       CsmElementId targetId,
       ProvenanceRecord provenance,
       NativeAttributes nativeAttributes) {
+    Objects.requireNonNull(targetId, "targetId");
     return new CsmRelationship(
-        id, type, sourceId, targetId, provenance, nativeAttributes, Optional.empty());
+        id, type, sourceId, Optional.of(targetId), provenance, nativeAttributes, Optional.empty());
+  }
+
+  /**
+   * Convenience factory for a relationship whose target/consumer is
+   * not evidenced — never used to invent a consumer entity, only to
+   * represent the declaring side of a relationship whose other end is
+   * genuinely unknown from current evidence.
+   */
+  public static CsmRelationship withUnevidencedTarget(
+      CsmElementId id,
+      CsmRelationshipType type,
+      CsmElementId sourceId,
+      ProvenanceRecord provenance,
+      NativeAttributes nativeAttributes) {
+    return new CsmRelationship(
+        id, type, sourceId, Optional.empty(), provenance, nativeAttributes, Optional.empty());
   }
 }

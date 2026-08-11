@@ -42,12 +42,18 @@ import java.util.Optional;
  * whole makes (tasks.md 6.2, 6.3).
  *
  * <p>After every Evidence Item has been dispatched, {@link
- * ContainmentRelationshipBuilder} and {@link DependencyRelationshipBuilder}
- * construct CSM {@code CONTAINMENT} and {@code dependency} relationships
- * from the Evidence Model's own structure (tasks.md 8.1, 10.4) — a
- * distinct step from per-item Mapper dispatch, since both are
- * relationships between (or grouped across) Evidence Items, not an
- * Evidence Item in its own right.
+ * ContainmentRelationshipBuilder}, {@link DependencyRelationshipBuilder},
+ * and {@link ExternalSystemRelationshipBuilder} construct CSM
+ * {@code CONTAINMENT}, {@code dependency}, and {@code integration}/
+ * {@code External System} content from the Evidence Model's own
+ * structure (tasks.md 8.1, 10.4, 11.1-11.2) — a distinct step from
+ * per-item Mapper dispatch, since each is derived from relationships
+ * between (or grouped across) Evidence Items, not an Evidence Item in
+ * its own right. {@link ExternalSystemRelationshipBuilder} determines
+ * "unresolved" independently, from the same {@code resolvedIds} map
+ * Mapper dispatch populated — it does not depend on
+ * {@link DependencyRelationshipBuilder}'s output, though it
+ * conventionally runs after it.
  */
 public final class MappingOrchestrator {
 
@@ -106,6 +112,10 @@ public final class MappingOrchestrator {
         DependencyRelationshipBuilder.build(
             evidenceModel, resolvedIds, dependencyKindClassifier, constructionTimestamp);
     accumulated = accumulated.merge(new MappingResult(List.of(), dependencyRelationships));
+
+    MappingResult externalSystemResult =
+        ExternalSystemRelationshipBuilder.build(evidenceModel, resolvedIds, constructionTimestamp);
+    accumulated = accumulated.merge(externalSystemResult);
 
     return accumulated;
   }

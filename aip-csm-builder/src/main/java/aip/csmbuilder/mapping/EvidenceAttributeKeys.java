@@ -62,4 +62,15 @@ public final class EvidenceAttributeKeys {
    * {@link #NATIVE_SCOPE}.
    */
   public static final String BUILD_SYSTEM = "buildSystem";
+
+  /**
+   * An {@code ApiContractDeclaration} Evidence Item's lightweight
+   * structural summary (e.g. operation names, paths, verbs) — see
+   * {@code Deterministic API Relationship Discovery}. Preserved
+   * verbatim as the constructed {@code exposure/consumption}
+   * relationship's own native attribute, per {@code API Contract
+   * Relationship Construction}: "carrying the Evidence Item's
+   * structural summary as an attribute."
+   */
+  public static final String API_STRUCTURAL_SUMMARY = "structuralSummary";
 }

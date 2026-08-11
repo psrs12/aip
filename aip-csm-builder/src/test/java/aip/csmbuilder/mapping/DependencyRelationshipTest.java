@@ -50,7 +50,7 @@ class DependencyRelationshipTest {
     CsmRelationship rel = result.relationships().get(0);
     assertEquals(CsmRelationshipType.DEPENDENCY, rel.type());
     assertEquals(csmId(moduleA), rel.sourceId());
-    assertEquals(csmId(moduleB), rel.targetId());
+    assertEquals(Optional.of(csmId(moduleB)), rel.targetId());
     assertEquals(Optional.of(DependencyKind.COMPILE_TIME), rel.dependencyKind());
   }
 
@@ -105,9 +105,11 @@ class DependencyRelationshipTest {
   }
 
   @Test
-  void unresolvedTargetProducesNoRelationshipInThisSection() {
+  void unresolvedTargetProducesNoDependencyRelationship() {
     // No Module Evidence Item exists for "com.acme:external-artifact"
-    // - External System construction is a later section's concern.
+    // - it is instead represented as an External System via an
+    // `integration` relationship (see ExternalSystemRelationshipTest),
+    // never as a `dependency` relationship in this section.
     EvidenceItem moduleA = module(MODULE_A);
     EvidenceItem manifestEdge =
         manifestDependencyEdge("edge-1", MODULE_A, "com.acme:external-artifact", "maven", "compile");
@@ -115,7 +117,8 @@ class DependencyRelationshipTest {
 
     MappingResult result = construct(model);
 
-    assertTrue(result.relationships().isEmpty());
+    assertTrue(
+        result.relationships().stream().noneMatch(rel -> rel.type() == CsmRelationshipType.DEPENDENCY));
   }
 
   @Test

@@ -343,6 +343,65 @@ even though it isn't written yet, prevents the seam from being
 improvised inconsistently whenever RU implementation eventually
 happens.
 
+### 7. Exposure/Consumption Relationship Target Representation
+
+**Problem:** The archived `csm-builder` specification's `API Contract
+Relationship Construction` requirement is unconditional — "CSM Builder
+SHALL map an `ApiContractDeclaration` Evidence Item to an
+`exposure/consumption` relationship" — while its own "no invented
+consumer" rule (and the archived design's Decision 9) forbids
+populating that relationship's target with a fabricated consumer
+entity when, as is true of every `ApiContractDeclaration` Evidence Item
+RU currently produces, no consumer is evidenced at all. `aip-core`'s
+`CsmRelationship.targetId` was originally a mandatory `CsmElementId`,
+with no representation for "this relationship exists, but its other
+end is not yet known." This is a gap in the archived design, not a
+reopening of it — Decision 9 already committed to constructing the
+relationship without a consumer; it simply never specified what the
+mandatory field should hold in that case.
+
+**Decision:** `CsmRelationship.targetId` becomes `Optional<CsmElementId>`
+in `aip-core`. Absent means exactly "no target/consumer has been
+evidenced" — never "the target is the source itself" and never an
+invented placeholder entity. Every relationship-construction site that
+already has both ends (`CONTAINMENT`, `DEPENDENCY`,
+`INTEGRATION`/External System) continues to always populate a concrete
+target via the added `CsmRelationship.of(...)` convenience factory;
+only the `ApiContractDeclaration → exposure/consumption` mapping (the
+one case whose originating evidence supplies no target identity at
+all) uses the new `CsmRelationship.withUnevidencedTarget(...)` factory.
+This is a change to `aip-core`'s CSM domain-model *type*, not to the
+archived `canonical-software-model` specification's text — that
+specification never mandates every relationship carry a resolved
+target, and this design's own binding constraint that the archived
+specs are fixed inputs is about their content, not about the
+implementation types this change itself introduces in `aip-core`
+(Decision 1).
+
+**Rejected alternatives:**
+- *Self-loop (`targetId == sourceId`)* — reads as "the Type/Method
+  consumes itself," which is false and would silently corrupt any
+  future analysis walking `exposure/consumption` edges (e.g. counting
+  distinct consumers, or graphing exposure fan-out).
+- *Skip relationship construction entirely when no consumer is known*
+  — contradicts the requirement's own first scenario ("CSM Builder
+  processes an `ApiContractDeclaration` Evidence Item... SHALL
+  construct an `exposure/consumption` relationship"), and would
+  silently drop the structural summary attribute the requirement also
+  says must be carried.
+
+**Consequence:** because `ApiContractDeclaration` evidence supplies no
+consumer-identifying fact under RU's current evidence coverage (see the
+archived RU specification's `Deterministic API Relationship Discovery`
+requirement), every `exposure/consumption` relationship CSM Builder
+constructs today has an absent target in practice. Task 12.2's "no
+invented consumer" guard is therefore mechanically trivial today (there
+is no consumer-lookup path to invent one from) but remains load-bearing
+for whenever a future evidence kind or RU capability supplies
+consumer-identifying facts — at that point, a target becomes populated
+only by resolving to CSM content that already exists from that other
+evidence, never fabricated here.
+
 ## Risks / Trade-offs
 
 - [Co-locating the CSM and Evidence domain models in `aip-core`

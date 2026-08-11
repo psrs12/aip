@@ -135,7 +135,7 @@ class CsmVocabularyClosureTest {
                 new CsmElementId("rel:1"),
                 CsmRelationshipType.CONTAINMENT,
                 a,
-                b,
+                Optional.of(b),
                 observed,
                 NativeAttributes.empty(),
                 Optional.of(DependencyKind.COMPILE_TIME)));

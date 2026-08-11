@@ -63,4 +63,36 @@ public final class ElementIdentityDeriver {
     Objects.requireNonNull(type, "type");
     return new CsmElementId("csm:rel:" + type + ":" + sourceId + "->" + targetId);
   }
+
+  /**
+   * An {@code External System} element's CSM identity: a function of
+   * the repository identifier and the unresolved target artifact
+   * coordinate itself — not of any Evidence identity, since no
+   * Evidence Item represents the external system directly (it is only
+   * ever the unresolved target of a {@code ManifestDependencyEdge}).
+   * Two edges naming the same external artifact coordinate therefore
+   * resolve to the same External System element (see {@code External
+   * System Construction for Unresolved Dependencies}).
+   */
+  public static CsmElementId forExternalSystem(
+      String repositoryIdentifier, String targetArtifactCoordinate) {
+    Objects.requireNonNull(repositoryIdentifier, "repositoryIdentifier");
+    Objects.requireNonNull(targetArtifactCoordinate, "targetArtifactCoordinate");
+    return new CsmElementId("csm:external:" + repositoryIdentifier + ":" + targetArtifactCoordinate);
+  }
+
+  /**
+   * An {@code exposure/consumption} relationship's CSM identity
+   * constructed from an {@code ApiContractDeclaration} Evidence Item: a
+   * stable transformation of that Evidence Item's own identity (unlike
+   * {@link #forRelationship}, which is a function of source/target
+   * identity, this relationship has no evidenced target to include, and
+   * each {@code ApiContractDeclaration} corresponds 1:1 to its own
+   * relationship, the same way a 1:1-evidence entity's identity does —
+   * see {@link #fromEvidenceId}).
+   */
+  public static CsmElementId forApiContractExposure(EvidenceId apiContractEvidenceId) {
+    Objects.requireNonNull(apiContractEvidenceId, "apiContractEvidenceId");
+    return new CsmElementId("csm:rel:exposure:" + apiContractEvidenceId);
+  }
 }

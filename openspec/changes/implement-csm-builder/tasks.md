@@ -74,16 +74,16 @@
 
 ## 11. External System Construction
 
-- [ ] 11.1 Implement the mechanical unresolved-target lookup (does a manifest-declared target correspond to a known Project/Module identity?). Depends on: 7.2, 7.3.
-- [ ] 11.2 Implement `External System` element construction connected by an `integration` relationship — not `dependency` — from the source `Module`. Depends on: 11.1.
-- [ ] 11.3 Leave criticality, integration-protocol, and owner attributes unset on constructed `External System` elements. Depends on: 11.2.
-- [ ] 11.4 Add a regression test asserting the constructed relationship type is `integration`, guarding the defect corrected in stakeholder review. Depends on: 11.2.
+- [x] 11.1 Implement the mechanical unresolved-target lookup (does a manifest-declared target correspond to a known Project/Module identity?). Depends on: 7.2, 7.3.
+- [x] 11.2 Implement `External System` element construction connected by an `integration` relationship — not `dependency` — from the source `Module`. Depends on: 11.1.
+- [x] 11.3 Leave criticality, integration-protocol, and owner attributes unset on constructed `External System` elements. Depends on: 11.2.
+- [x] 11.4 Add a regression test asserting the constructed relationship type is `integration`, guarding the defect corrected in stakeholder review. Depends on: 11.2.
 
 ## 12. API Contract Mapping
 
-- [ ] 12.1 Implement `ApiContractDeclaration` → `exposure/consumption` relationship construction, attached to the declaring `Type`/`Method`. Depends on: 7.5, 7.7.
-- [ ] 12.2 Enforce that no consumer entity is invented unless one is already evidenced elsewhere in CSM content. Depends on: 12.1.
-- [ ] 12.3 Add tests for both the exposure relationship construction and the no-invented-consumer guarantee. Depends on: 12.1, 12.2.
+- [x] 12.1 Implement `ApiContractDeclaration` → `exposure/consumption` relationship construction, attached to the declaring `Type`/`Method`. Depends on: 7.5, 7.7.
+- [x] 12.2 Enforce that no consumer entity is invented unless one is already evidenced elsewhere in CSM content. Depends on: 12.1.
+- [x] 12.3 Add tests for both the exposure relationship construction and the no-invented-consumer guarantee. Depends on: 12.1, 12.2.
 
 ## 13. Explicit Exclusions
 

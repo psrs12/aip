@@ -91,7 +91,7 @@ class ContainmentTraversalTest {
         ElementIdentityDeriver.forPackage(ElementIdentityDeriver.fromEvidenceId(module.id()), "com.acme.pkg");
     boolean foundModuleToPackage =
         result.relationships().stream()
-            .anyMatch(rel -> rel.sourceId().equals(moduleId) && rel.targetId().equals(packageId));
+            .anyMatch(rel -> rel.sourceId().equals(moduleId) && rel.targetId().equals(Optional.of(packageId)));
     assertTrue(foundModuleToPackage, "expected a CONTAINMENT relationship from Module to Package");
   }
 
@@ -112,7 +112,7 @@ class ContainmentTraversalTest {
     assertEquals(1, result.relationships().size());
     CsmRelationship rel = result.relationships().get(0);
     assertEquals(elementId(result, repository.id()), rel.sourceId());
-    assertEquals(elementId(result, unmanagedProject.id()), rel.targetId());
+    assertEquals(Optional.of(elementId(result, unmanagedProject.id())), rel.targetId());
   }
 
   @Test
@@ -132,7 +132,7 @@ class ContainmentTraversalTest {
     assertEquals(1, result.relationships().size());
     CsmRelationship rel = result.relationships().get(0);
     assertEquals(elementId(result, project.id()), rel.sourceId());
-    assertEquals(elementId(result, defaultModule.id()), rel.targetId());
+    assertEquals(Optional.of(elementId(result, defaultModule.id())), rel.targetId());
   }
 
   @Test
