@@ -8,6 +8,7 @@ import aip.core.evidence.EvidenceItem;
 import aip.core.evidence.EvidenceKind;
 import aip.core.evidence.EvidenceRelationshipType;
 import aip.csmbuilder.identity.ElementIdentityDeriver;
+import aip.csmbuilder.mapping.EvidenceAttributeKeys;
 import aip.csmbuilder.mapping.EvidenceKindMapper;
 import aip.csmbuilder.mapping.EvidenceRelationshipLookup;
 import aip.csmbuilder.mapping.MappingContext;

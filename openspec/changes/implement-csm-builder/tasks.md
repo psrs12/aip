@@ -60,17 +60,17 @@
 
 ## 9. File-Location Handling
 
-- [ ] 9.1 Implement File Evidence → source-location attribute mapping on the corresponding `Type`/`Method` element. Depends on: 7.5, 7.7.
-- [ ] 9.2 Add a guard/test proving no CSM relationship or containment edge is ever constructed to a File Evidence Item. Depends on: 9.1.
+- [x] 9.1 Implement File Evidence → source-location attribute mapping on the corresponding `Type`/`Method` element. Depends on: 7.5, 7.7.
+- [x] 9.2 Add a guard/test proving no CSM relationship or containment edge is ever constructed to a File Evidence Item. Depends on: 9.1.
 
 ## 10. Dependency Mapping and Kind-Classification Abstraction
 
-- [ ] 10.1 Define the Dependency-Kind Classifier abstraction (interface), decoupled from any specific mapping-table implementation (invariant 6, `design.md` Decision 3). Depends on: 4.1.
-- [ ] 10.2 Implement the versioned, declarative per-build-system mapping-resource format and loader behind that abstraction. Depends on: 10.1.
-- [ ] 10.3 Populate initial mapping resources with starter entries (exhaustive coverage is reference data, extended incrementally, not blocking). Depends on: 10.2.
-- [ ] 10.4 Implement `ManifestDependencyEdge`/`ImportEdge` → single CSM `dependency` relationship construction, covering the manifest-only, source-only, and both-present cases. Depends on: 7.3.
-- [ ] 10.5 Wire the Dependency-Kind Classifier into dependency relationship construction; an unmapped native scope string SHALL yield no kind qualifier, never a guess. Depends on: 10.2, 10.4.
-- [ ] 10.6 Add tests for manifest-only, source-only, both-present, mappable scope, unmappable scope, and confirm no corroboration attribute is recorded (per the corrected specification). Depends on: 10.4, 10.5.
+- [x] 10.1 Define the Dependency-Kind Classifier abstraction (interface), decoupled from any specific mapping-table implementation (invariant 6, `design.md` Decision 3). Depends on: 4.1.
+- [x] 10.2 Implement the versioned, declarative per-build-system mapping-resource format and loader behind that abstraction. Depends on: 10.1.
+- [x] 10.3 Populate initial mapping resources with starter entries (exhaustive coverage is reference data, extended incrementally, not blocking). Depends on: 10.2.
+- [x] 10.4 Implement `ManifestDependencyEdge`/`ImportEdge` → single CSM `dependency` relationship construction, covering the manifest-only, source-only, and both-present cases. Depends on: 7.3.
+- [x] 10.5 Wire the Dependency-Kind Classifier into dependency relationship construction; an unmapped native scope string SHALL yield no kind qualifier, never a guess. Depends on: 10.2, 10.4.
+- [x] 10.6 Add tests for manifest-only, source-only, both-present, mappable scope, unmappable scope, and confirm no corroboration attribute is recorded (per the corrected specification). Depends on: 10.4, 10.5.
 
 ## 11. External System Construction
 

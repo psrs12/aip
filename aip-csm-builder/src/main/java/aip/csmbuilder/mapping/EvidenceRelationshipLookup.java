@@ -50,4 +50,34 @@ public final class EvidenceRelationshipLookup {
     }
     return found;
   }
+
+  /**
+   * The single target Evidence identity of a {@code type} relationship
+   * whose source is {@code sourceId}, if exactly one exists — the
+   * mirror of {@link #findSingleSource}. Used, for example, by a
+   * {@code SourceUnit}/Method-level Evidence Item to find its own
+   * {@code File} Evidence Item via a {@code REFERENCE} relationship
+   * (see {@code File Evidence and Kind-Specific Layering}).
+   *
+   * @throws IllegalStateException if more than one such relationship
+   *     exists.
+   */
+  public static Optional<EvidenceId> findSingleTarget(
+      RepositoryEvidenceModel model, EvidenceRelationshipType type, EvidenceId sourceId) {
+    Objects.requireNonNull(model, "model");
+    Objects.requireNonNull(type, "type");
+    Objects.requireNonNull(sourceId, "sourceId");
+
+    Optional<EvidenceId> found = Optional.empty();
+    for (EvidenceRelationship relationship : model.relationships()) {
+      if (relationship.type() == type && relationship.sourceId().equals(sourceId)) {
+        if (found.isPresent()) {
+          throw new IllegalStateException(
+              "more than one " + type + " relationship originates from " + sourceId);
+        }
+        found = Optional.of(relationship.targetId());
+      }
+    }
+    return found;
+  }
 }

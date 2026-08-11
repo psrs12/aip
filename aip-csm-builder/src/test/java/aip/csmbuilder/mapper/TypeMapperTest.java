@@ -10,6 +10,7 @@ import aip.core.evidence.EvidenceItem;
 import aip.core.evidence.EvidenceKind;
 import aip.core.evidence.RepositoryEvidenceModel;
 import aip.csmbuilder.identity.ElementIdentityDeriver;
+import aip.csmbuilder.mapping.EvidenceAttributeKeys;
 import aip.csmbuilder.mapping.EvidenceKindMapperRegistry;
 import aip.csmbuilder.mapping.MappingOrchestrator;
 import aip.csmbuilder.mapping.MappingResult;

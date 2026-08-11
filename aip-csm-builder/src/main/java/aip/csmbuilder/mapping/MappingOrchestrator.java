@@ -5,6 +5,8 @@ import aip.core.csm.CsmRelationship;
 import aip.core.evidence.EvidenceId;
 import aip.core.evidence.EvidenceItem;
 import aip.core.evidence.RepositoryEvidenceModel;
+import aip.csmbuilder.dependency.DependencyKindClassifier;
+import aip.csmbuilder.dependency.ResourceDependencyKindClassifier;
 import aip.csmbuilder.provenance.ProvenanceGuard;
 import java.time.Clock;
 import java.time.Instant;
@@ -40,24 +42,33 @@ import java.util.Optional;
  * whole makes (tasks.md 6.2, 6.3).
  *
  * <p>After every Evidence Item has been dispatched, {@link
- * ContainmentRelationshipBuilder} constructs CSM {@code CONTAINMENT}
- * relationships from the Evidence Model's own containment structure
- * (tasks.md 8.1) — a distinct step from per-item Mapper dispatch, since
- * containment is a relationship between Evidence Items, not an
+ * ContainmentRelationshipBuilder} and {@link DependencyRelationshipBuilder}
+ * construct CSM {@code CONTAINMENT} and {@code dependency} relationships
+ * from the Evidence Model's own structure (tasks.md 8.1, 10.4) — a
+ * distinct step from per-item Mapper dispatch, since both are
+ * relationships between (or grouped across) Evidence Items, not an
  * Evidence Item in its own right.
  */
 public final class MappingOrchestrator {
 
   private final EvidenceKindMapperRegistry registry;
   private final Clock clock;
+  private final DependencyKindClassifier dependencyKindClassifier;
 
   public MappingOrchestrator(EvidenceKindMapperRegistry registry) {
     this(registry, Clock.systemUTC());
   }
 
   public MappingOrchestrator(EvidenceKindMapperRegistry registry, Clock clock) {
+    this(registry, clock, ResourceDependencyKindClassifier.loadDefaults());
+  }
+
+  public MappingOrchestrator(
+      EvidenceKindMapperRegistry registry, Clock clock, DependencyKindClassifier dependencyKindClassifier) {
     this.registry = Objects.requireNonNull(registry, "registry");
     this.clock = Objects.requireNonNull(clock, "clock");
+    this.dependencyKindClassifier =
+        Objects.requireNonNull(dependencyKindClassifier, "dependencyKindClassifier");
   }
 
   public MappingResult construct(RepositoryEvidenceModel evidenceModel) {
@@ -90,6 +101,11 @@ public final class MappingOrchestrator {
     List<CsmRelationship> containmentRelationships =
         ContainmentRelationshipBuilder.build(evidenceModel, resolvedIds, constructionTimestamp);
     accumulated = accumulated.merge(new MappingResult(List.of(), containmentRelationships));
+
+    List<CsmRelationship> dependencyRelationships =
+        DependencyRelationshipBuilder.build(
+            evidenceModel, resolvedIds, dependencyKindClassifier, constructionTimestamp);
+    accumulated = accumulated.merge(new MappingResult(List.of(), dependencyRelationships));
 
     return accumulated;
   }

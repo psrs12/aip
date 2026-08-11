@@ -9,7 +9,6 @@ import aip.csmbuilder.mapping.EvidenceKindMapper;
 import aip.csmbuilder.mapping.MappingContext;
 import aip.csmbuilder.mapping.MappingResult;
 import aip.csmbuilder.provenance.ObservedProvenanceFactory;
-import java.util.Optional;
 
 /**
  * Maps a Method-level Evidence Item to a CSM {@link MethodElement}, per
@@ -20,9 +19,9 @@ import java.util.Optional;
  * given Type, which is valid (see {@code Optional Method-Level
  * Representation}).
  *
- * <p>{@link MethodElement#sourceLocation()} is left empty by this
- * Mapper — see {@link TypeMapper}'s javadoc for why (Section 9's
- * concern, not this one's).
+ * <p>{@link MethodElement#sourceLocation()} is resolved from this
+ * Evidence Item's File Evidence Item — see {@link FileLocationResolver}
+ * and {@link TypeMapper}'s javadoc.
  */
 public final class MethodMapper implements EvidenceKindMapper {
 
@@ -46,7 +45,7 @@ public final class MethodMapper implements EvidenceKindMapper {
             item.id().scopeKey(),
             ObservedProvenanceFactory.fromEvidence(item.id(), context.constructionTimestamp()),
             NativeAttributes.empty(),
-            Optional.empty());
+            FileLocationResolver.resolve(item, context));
     return MappingResult.ofElement(element);
   }
 }

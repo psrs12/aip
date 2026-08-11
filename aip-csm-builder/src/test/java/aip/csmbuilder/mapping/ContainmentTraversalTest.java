@@ -17,7 +17,6 @@ import aip.core.evidence.EvidenceRelationshipType;
 import aip.core.evidence.ExtractionMethod;
 import aip.core.evidence.RepositoryEvidenceModel;
 import aip.csmbuilder.identity.ElementIdentityDeriver;
-import aip.csmbuilder.mapper.EvidenceAttributeKeys;
 import aip.csmbuilder.mapper.MethodMapper;
 import aip.csmbuilder.mapper.ModuleMapper;
 import aip.csmbuilder.mapper.PackageMapper;

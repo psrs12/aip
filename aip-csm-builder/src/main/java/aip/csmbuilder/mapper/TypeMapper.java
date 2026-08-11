@@ -5,6 +5,7 @@ import aip.core.csm.TypeElement;
 import aip.core.evidence.EvidenceItem;
 import aip.core.evidence.EvidenceKind;
 import aip.csmbuilder.identity.ElementIdentityDeriver;
+import aip.csmbuilder.mapping.EvidenceAttributeKeys;
 import aip.csmbuilder.mapping.EvidenceKindMapper;
 import aip.csmbuilder.mapping.MappingContext;
 import aip.csmbuilder.mapping.MappingResult;
@@ -23,10 +24,11 @@ import java.util.Optional;
  * error here; Repository Understanding's own completeness is not this
  * Mapper's concern to enforce.
  *
- * <p>{@link TypeElement#sourceLocation()} is left empty by this
- * Mapper — populating it from File Evidence is Section 9's concern
- * (see {@code File Evidence Becomes a Location Attribute, Not a
- * Relationship}), not this one's.
+ * <p>{@link TypeElement#sourceLocation()} is resolved from this
+ * {@code SourceUnit}'s File Evidence Item, via
+ * {@link FileLocationResolver} (see {@code File Evidence Becomes a
+ * Location Attribute, Not a Relationship}) — never as a CSM
+ * relationship to anything File-shaped.
  */
 public final class TypeMapper implements EvidenceKindMapper {
 
@@ -57,7 +59,7 @@ public final class TypeMapper implements EvidenceKindMapper {
             item.id().scopeKey(),
             ObservedProvenanceFactory.fromEvidence(item.id(), context.constructionTimestamp()),
             attributes,
-            Optional.empty());
+            FileLocationResolver.resolve(item, context));
     return MappingResult.ofElement(element);
   }
 }
