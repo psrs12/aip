@@ -32,16 +32,16 @@
 
 ## 5. Deterministic Identity Derivation
 
-- [ ] 5.1 Implement CSM element identity derivation for 1:1-evidence entities as a pure function of Evidence identity. Depends on: 4.1.
-- [ ] 5.2 Implement CSM element identity derivation for `Package` (function of containing Module identity + native namespace name, independent of member `SourceUnit` evidence). Depends on: 5.1.
-- [ ] 5.3 Implement CSM relationship identity derivation (source entity identity, target entity identity, relationship type — excluding the dependency-kind qualifier). Depends on: 5.1.
-- [ ] 5.4 Add identity-stability tests covering unchanged-evidence stability, Package identity survival across member changes, and dependency-relationship identity stability across a kind-qualifier change. Depends on: 5.1–5.3.
+- [x] 5.1 Implement CSM element identity derivation for 1:1-evidence entities as a pure function of Evidence identity. Depends on: 4.1.
+- [x] 5.2 Implement CSM element identity derivation for `Package` (function of containing Module identity + native namespace name, independent of member `SourceUnit` evidence). Depends on: 5.1.
+- [x] 5.3 Implement CSM relationship identity derivation (source entity identity, target entity identity, relationship type — excluding the dependency-kind qualifier). Depends on: 5.1.
+- [x] 5.4 Add identity-stability tests covering unchanged-evidence stability, Package identity survival across member changes, and dependency-relationship identity stability across a kind-qualifier change. Depends on: 5.1–5.3.
 
 ## 6. Provenance and Traceability
 
-- [ ] 6.1 Implement Structured Provenance Record construction: `observed` always, source reference = originating Evidence identity/identities, construction/re-derivation timestamp. Depends on: 5.1, 2.3.
-- [ ] 6.2 Add a construction-time guard rejecting any attempt to attach a confidence level to CSM Builder-constructed content. Depends on: 6.1.
-- [ ] 6.3 Implement traceability-reference preservation on every constructed element/relationship. Depends on: 6.1.
+- [x] 6.1 Implement Structured Provenance Record construction: `observed` always, source reference = originating Evidence identity/identities, construction/re-derivation timestamp. Depends on: 5.1, 2.3.
+- [x] 6.2 Add a construction-time guard rejecting any attempt to attach a confidence level to CSM Builder-constructed content. Depends on: 6.1.
+- [x] 6.3 Implement traceability-reference preservation on every constructed element/relationship. Depends on: 6.1.
 
 ## 7. Structural Entity Mappers
 

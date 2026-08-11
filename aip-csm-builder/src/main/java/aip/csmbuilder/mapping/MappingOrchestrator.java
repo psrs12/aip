@@ -4,6 +4,7 @@ import aip.core.csm.CsmElementId;
 import aip.core.evidence.EvidenceId;
 import aip.core.evidence.EvidenceItem;
 import aip.core.evidence.RepositoryEvidenceModel;
+import aip.csmbuilder.provenance.ProvenanceGuard;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +28,13 @@ import java.util.Optional;
  * {@code invocation} relationship-type exclusion are ultimately
  * realized: by simply never registering a Mapper for those kinds,
  * rather than this class special-casing them.
+ *
+ * <p>Every Mapper's result is verified by {@link ProvenanceGuard}
+ * before being merged into the accumulated result — this holds
+ * regardless of which Mapper produced it, so an individual Mapper
+ * implementation being careless does not compromise the
+ * {@code observed}-only and traceability guarantees CSM Builder as a
+ * whole makes (tasks.md 6.2, 6.3).
  */
 public final class MappingOrchestrator {
 
@@ -54,6 +62,7 @@ public final class MappingOrchestrator {
         continue;
       }
       MappingResult result = mapper.get().map(item, context);
+      ProvenanceGuard.verify(result, item);
       if (!result.elements().isEmpty()) {
         resolvedIds.put(item.id(), result.elements().get(0).id());
       }

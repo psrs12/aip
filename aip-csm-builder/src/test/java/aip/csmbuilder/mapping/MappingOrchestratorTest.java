@@ -1,8 +1,13 @@
 package aip.csmbuilder.mapping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import aip.core.csm.CsmElementId;
+import aip.core.csm.ModuleElement;
+import aip.core.csm.NativeAttributes;
+import aip.core.csm.ProvenanceRecord;
 import aip.core.evidence.DiscoveryOutcome;
 import aip.core.evidence.EvidenceAttributes;
 import aip.core.evidence.EvidenceId;
@@ -10,6 +15,7 @@ import aip.core.evidence.EvidenceItem;
 import aip.core.evidence.EvidenceKind;
 import aip.core.evidence.ExtractionMethod;
 import aip.core.evidence.RepositoryEvidenceModel;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -141,6 +147,47 @@ class MappingOrchestratorTest {
     new MappingOrchestrator(registry).construct(model);
 
     assertTrue(sawResolvedId[0], "PACKAGE Mapper should see MODULE's already-resolved element id");
+  }
+
+  @Test
+  void orchestratorRejectsAMisbehavingMapperRegardlessOfImplementation() {
+    // ProvenanceGuard (Section 6) is wired into the Orchestrator
+    // itself, so even a Mapper that never consults it is still
+    // caught — CSM Builder's observed-only/traceability guarantees do
+    // not depend on every future Mapper implementation remembering to
+    // enforce them individually.
+    EvidenceItem module = item(EvidenceKind.MODULE, "com.acme:module-a");
+    EvidenceKindMapper misbehavingMapper =
+        new EvidenceKindMapper() {
+          @Override
+          public EvidenceKind supportedKind() {
+            return EvidenceKind.MODULE;
+          }
+
+          @Override
+          public int mapperVersion() {
+            return 1;
+          }
+
+          @Override
+          public MappingResult map(EvidenceItem item, MappingContext context) {
+            // Declared provenance — CSM Builder must never produce this.
+            ModuleElement element =
+                new ModuleElement(
+                    new CsmElementId("csm:" + item.id()),
+                    item.id().scopeKey(),
+                    ProvenanceRecord.declared(item.id().toString(), Instant.EPOCH),
+                    NativeAttributes.empty());
+            return MappingResult.ofElement(element);
+          }
+        };
+
+    EvidenceKindMapperRegistry registry = new EvidenceKindMapperRegistry();
+    registry.register(misbehavingMapper);
+    RepositoryEvidenceModel model = RepositoryEvidenceModel.of(List.of(module), List.of());
+
+    assertThrows(
+        IllegalStateException.class, () -> new MappingOrchestrator(registry).construct(model));
   }
 
   private static EvidenceItem item(EvidenceKind kind, String scopeKey) {
