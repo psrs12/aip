@@ -136,9 +136,9 @@
 
 ## 21. Fixture Layer
 
-- [ ] 21.1 Implement the `RepositoryEvidenceModelBuilder` fixture-building API in `aip-csm-builder`'s test sources, using `aip.core.evidence` types exclusively (invariants 3, 4). Depends on: 3.1–3.5.
-- [ ] 21.2 Add a build/lint check confirming the fixture package is test-scope only and is never imported by CSM Builder's production code (invariant 4). Depends on: 21.1.
-- [ ] 21.3 Build a named fixture-scenario library (single Module, multi-module Project, unmanaged files, partial evidence, mappable/unmappable dependency scope, removed/tombstoned evidence across two runs, etc.), each traced to its originating RU specification requirement/scenario. Depends on: 21.1.
+- [x] 21.1 Implement the `RepositoryEvidenceModelBuilder` fixture-building API in `aip-csm-builder`'s test sources, using `aip.core.evidence` types exclusively (invariants 3, 4). Depends on: 3.1–3.5.
+- [x] 21.2 Add a build/lint check confirming the fixture package is test-scope only and is never imported by CSM Builder's production code (invariant 4). Depends on: 21.1.
+- [x] 21.3 Build a named fixture-scenario library (single Module, multi-module Project, unmanaged files, partial evidence, mappable/unmappable dependency scope, removed/tombstoned evidence across two runs, etc.), each traced to its originating RU specification requirement/scenario. Depends on: 21.1.
 
 ## 22. Test Organization, Naming, and Reserved Integration Seam
 

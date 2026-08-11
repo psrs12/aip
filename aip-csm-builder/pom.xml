@@ -64,6 +64,26 @@
               </arguments>
             </configuration>
           </execution>
+          <!--
+            Fixture-package scope guard (design.md Decision 5; tasks.md
+            21.2): fails the build if any production source under
+            src/main/java references the test-only fixture-building
+            package (invariant 4).
+          -->
+          <execution>
+            <id>check-fixture-package-scope</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-fixture-package-scope.sh</executable>
+              <arguments>
+                <argument>aip-csm-builder</argument>
+                <argument>aip.csmbuilder.test.fixtures</argument>
+              </arguments>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>
