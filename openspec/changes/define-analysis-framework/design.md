@@ -205,6 +205,24 @@ every future consumer to depend on `aip-analysis` just to get it, is
 strictly worse than the one-line-of-reasoning fix of keeping it general
 in `aip-core` from the start.
 
+**Addendum (found while specifying Rule Framework):** the original
+`Analysis View Construction` requirement described the View's content
+(per-Subject effective knowledge plus conflict status) but never said
+the View itself exposes its *source CSM Snapshot's own identity*. Rule
+Framework's own design needs that identity for Rule Evaluation Result
+identity/traceability, and — per its own Decision 7 — reads CSM content
+exclusively through the Analysis View, never through a direct
+`CsmSnapshotSource` dependency. Without this addendum, Rule Framework
+would have had no way to obtain that identity without either
+reopening its own dependency boundary or inventing a second identity
+scheme, both explicitly ruled out. This is a small, additive
+clarification, not a new decision: the Analysis View now also exposes
+the identical `CsmSnapshotSource` identity `CSM Snapshot Source Shape`
+already defines — the same identity, not a second one — so this does
+not reopen this Decision 3, only completes what it left unstated. See
+`define-rule-framework/design.md` Decision 4/7 for the consuming side
+of this addendum.
+
 ### 4. Analysis Result identity, traceability, and the result-store abstraction
 
 **Problem:** What makes an `AnalysisResult` durable and traceable, and
