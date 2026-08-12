@@ -116,10 +116,20 @@ CSM's own Subject Identification for Knowledge Assertions) present in
 the snapshot's content, that Subject's effective knowledge (per the
 CSM's Effective Knowledge and Precedence rules) together with its
 conflict status (EFFECTIVE or CONFLICTED, per the CSM's Same-Category
-Conflict Marking and Resolution rules). An Analyzer SHALL be able to
-complete its analysis using only Analysis View content, without direct
-access to the CSM Snapshot Source, Repository Evidence, or Policy/Rule
-content.
+Conflict Marking and Resolution rules). The Analysis View SHALL also
+expose the source CSM Snapshot's own stable identity (the same identity
+described in CSM Snapshot Source Shape) — not a second, independent
+identity scheme — so a consumer holding only an Analysis View can
+still determine, and reference, which CSM Snapshot it was derived
+from. An Analyzer SHALL be able to complete its analysis using only
+Analysis View content, without direct access to the CSM Snapshot
+Source, Repository Evidence, or Policy/Rule content.
+
+#### Scenario: Analysis View exposes its source CSM Snapshot identity
+- **WHEN** an Analysis View is constructed from a CSM Snapshot Source
+- **THEN** the Analysis View SHALL expose that CSM Snapshot Source's own
+  stable identity, unchanged from how CSM Snapshot Source Shape defines
+  it
 
 #### Scenario: Analysis View reflects effective knowledge for an uncontested subject
 - **WHEN** a Subject in the CSM Snapshot has exactly one knowledge
