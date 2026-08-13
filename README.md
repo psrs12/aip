@@ -10,7 +10,54 @@ tool.
 See [`openspec/project.md`](openspec/project.md) for the full project
 vision, core principles, functional scope, and technology direction.
 See [`docs/architecture.md`](docs/architecture.md) for architecture
-and design-flow diagrams of what's actually implemented so far.
+and pipeline diagrams (capability chain, module graph, the
+validate-before-publish gate, an end-to-end worked example), and
+[`docs/design.md`](docs/design.md) for the technical design underneath
+them (identity schemes, the shared Scope/applicability model, the
+AI-isolation boundary, accepted v1 limitations).
+
+## Status
+
+Every capability in `openspec/project.md` §11's evolution order is
+specified, implemented, tested, and archived:
+
+```mermaid
+flowchart LR
+    RU["Software Repository<br/>Understanding<br/><sub>specified only</sub>"]
+    CB["CSM Builder<br/><sub>implemented</sub>"]
+    AF["Analysis<br/>Framework<br/><sub>implemented</sub>"]
+    RF["Rule<br/>Framework<br/><sub>implemented</sub>"]
+    FM["Finding<br/>Model<br/><sub>implemented</sub>"]
+    AgF["Agent<br/>Framework<br/><sub>implemented</sub>"]
+    ACA["Architecture<br/>Compliance Agent<br/><sub>implemented</sub>"]
+
+    RU -.-> CB --> AF --> RF --> FM --> AgF --> ACA
+```
+
+`mvn verify` from the repository root builds and architecturally
+guards the full six-module reactor: **315 tests, 0 failures**, plus
+every module's own dependency-graph, fixture-scope, and
+no-AI-import CI guards.
+
+| Module | Capability | Depends on |
+|---|---|---|
+| `aip-core` | CSM domain model, Repository Evidence contract, four read-only `*Source` contracts | — |
+| `aip-csm-builder` | Repository Evidence → CSM Snapshot construction | `aip-core` |
+| `aip-analysis` | Analyzer contract + orchestration → `AnalysisResult` | `aip-core` |
+| `aip-rules` | Rule Type contract + orchestration → `RuleEvaluationResult`, plus the first concrete Rule Type (boundary compliance) | `aip-core` |
+| `aip-findings` | `RuleEvaluationResult` → `Finding` construction | `aip-core` |
+| `aip-ai` | Agent contract + orchestration → `Recommendation`, plus the first concrete Agent (Architecture Compliance) — the only AI-bearing module | `aip-core` |
+
+All six modules are independent siblings of `aip-core` — none depends
+on any other, even though the content they produce flows through all
+of them in sequence at runtime; each layer reads its upstream
+neighbor's output only through a dedicated `aip-core` contract. See
+[`docs/architecture.md`](docs/architecture.md) §2 for the full
+dependency graph and the CI checks enforcing it.
+
+`aip-analyzer` (a real Repository Understanding implementation) and
+`aip-cli`/`aip-server` are named in `openspec/project.md`'s module
+chain but not yet built.
 
 ## Development Methodology
 
@@ -30,68 +77,50 @@ design have been reviewed and approved.
 
 ```
 pom.xml                  # Maven parent aggregator (Java 21+)
-aip-core/                 # Foundational domain models: the Canonical
-│                          # Software Model (aip.core.csm) and the
-│                          # Repository Evidence contract
-│                          # (aip.core.evidence)
-aip-csm-builder/           # Deterministic transformation of Repository
-                           # Evidence into observed CSM knowledge
-                           # (depends on aip-core only)
-scripts/                 # Architectural guard scripts bound to `mvn
-                           # verify` — dependency graph, fixture scope,
-                           # test naming, evidence-type uniqueness,
-                           # AI/heuristic-import exclusion, excluded-
-                           # construction exclusion
+aip-core/                 # CSM domain model (aip.core.csm), Repository
+│                          # Evidence contract (aip.core.evidence),
+│                          # four read-only Source contracts
+aip-csm-builder/           # Repository Evidence → CSM Snapshot
+aip-analysis/              # Analyzer contract + orchestration → AnalysisResult
+aip-rules/                 # Rule Type contract + orchestration → RuleEvaluationResult
+│                          # + aip.rules.boundarycompliance (concrete Rule Type)
+aip-findings/               # RuleEvaluationResult → Finding
+aip-ai/                    # Agent contract + orchestration → Recommendation
+│                          # + aip.ai.architecturecompliance (concrete Agent)
+│                          # the only AI-bearing module
+scripts/                 # Architectural guard scripts bound to `mvn verify`
 docs/
-└── architecture.md       # Architecture and design-flow diagrams
+├── architecture.md       # Pipeline, module graph, and sequence diagrams
+└── design.md             # Identity schemes, Scope model, extension
+                           # pattern, AI-isolation boundary
 
 openspec/
 ├── project.md          # Project vision, principles, and scope
 ├── config.yaml          # OpenSpec project configuration
 ├── specs/                # Approved, current specifications (source of truth)
-│   ├── canonical-software-model/
 │   ├── software-repository-understanding/
-│   └── csm-builder/
-└── changes/              # In-flight and archived change proposals
-    └── archive/
-        ├── 2026-08-10-define-csm-builder/
-        ├── 2026-08-10-define-software-repository-understanding/
-        └── 2026-08-11-implement-csm-builder/   # tasks.md, traceability.md, invariants.md
+│   ├── canonical-software-model/
+│   ├── csm-builder/
+│   ├── analysis-framework/
+│   ├── rule-framework/
+│   ├── finding-model/
+│   ├── agent-framework/
+│   └── architecture-compliance-agent/
+└── changes/
+    └── archive/           # Every completed define-*/implement-* cycle:
+                            # proposal, design, tasks, traceability
 ```
 
-## Current Status
+## Building and Testing
 
-| Capability | Status |
-|---|---|
-| Canonical Software Model (CSM) | Specified and archived — see [`openspec/specs/canonical-software-model/spec.md`](openspec/specs/canonical-software-model/spec.md) |
-| Software Repository Understanding | Specified and archived (not yet implemented) — see [`openspec/specs/software-repository-understanding/spec.md`](openspec/specs/software-repository-understanding/spec.md) |
-| CSM Builder | Specified, archived, and **implemented** — see [`openspec/specs/csm-builder/spec.md`](openspec/specs/csm-builder/spec.md) and the archived [`implement-csm-builder`](openspec/changes/archive/2026-08-11-implement-csm-builder/) change |
+```
+mvn verify
+```
 
-CSM Builder's implementation proceeded independently of a Repository
-Understanding implementation, against contract-faithful Repository
-Evidence fixtures — see
-[`.../explore.md`](openspec/changes/archive/2026-08-11-implement-csm-builder/explore.md)
-for the sequencing decision and
-[`.../design.md`](openspec/changes/archive/2026-08-11-implement-csm-builder/design.md)
-for the resulting module architecture.
-
-**Implementation complete: 92/92 tasks** (all 24 sections of
-[`tasks.md`](openspec/changes/archive/2026-08-11-implement-csm-builder/tasks.md)):
-the full CSM domain model (`aip.core.csm`) and Repository Evidence
-contract (`aip.core.evidence`) in `aip-core`; and in `aip-csm-builder`,
-the Mapping Orchestrator with incremental re-derivation and Mapper
-versioning (`aip.csmbuilder.mapping`), deterministic identity
-derivation (`aip.csmbuilder.identity`), `observed`-only provenance
-construction and enforcement (`aip.csmbuilder.provenance`), seven
-structural/relational Mappers (`aip.csmbuilder.mapper`), a swappable
-dependency-kind classifier (`aip.csmbuilder.dependency`), a validated
-and persisted snapshot layer (`aip.csmbuilder.snapshot`), and a
-test-only fixture-building API (`aip.csmbuilder.test.fixtures`). 166
-tests and 6 architectural build guards pass under `mvn verify` across
-both modules. See [`docs/architecture.md`](docs/architecture.md) for
-how these pieces fit together, and
-[`.../traceability.md`](openspec/changes/archive/2026-08-11-implement-csm-builder/traceability.md)
-for the full requirement/scenario-to-test mapping.
+Runs the full reactor build, test suite, and every module's own
+architectural guard scripts. See
+[`docs/architecture.md`](docs/architecture.md) §9 for the complete
+guard-script table.
 
 ## Contributing
 

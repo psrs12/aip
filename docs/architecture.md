@@ -1,189 +1,363 @@
 # AIP Architecture and Design Flow
 
-This document diagrams the architecture actually implemented —
-grounded in the archived specifications under `openspec/specs/` and
-the code under `aip-core`/`aip-csm-builder`. CSM Builder's
-implementation is complete (all 92 tasks); see
-[`openspec/changes/archive/2026-08-11-implement-csm-builder/tasks.md`](../openspec/changes/archive/2026-08-11-implement-csm-builder/tasks.md)
-for the full task-by-task record,
-[`.../traceability.md`](../openspec/changes/archive/2026-08-11-implement-csm-builder/traceability.md)
-for the requirement/scenario-to-test matrix, and
-[`.../invariants.md`](../openspec/changes/archive/2026-08-11-implement-csm-builder/invariants.md)
-for the architectural invariants this document's guard diagram (§8)
-reflects.
+This document diagrams the architecture actually implemented — every
+capability named in `openspec/project.md` §11's evolution order is
+specified (`openspec/specs/`), implemented, tested, and archived
+(`openspec/changes/archive/`). The system is a six-module Maven
+reactor, `mvn verify` from the repository root builds and
+architecturally guards all of it: 315 tests, 0 failures, across
+`aip-core`, `aip-csm-builder`, `aip-analysis`, `aip-rules`,
+`aip-findings`, and `aip-ai`.
+
+For the detailed technical design underlying this diagram set — identity
+schemes, the validate-before-publish gate repeated at every layer,
+extension mechanisms, and the AI-isolation boundary — see
+[`docs/design.md`](design.md).
 
 ## 1. Capability chain
 
-The platform's evolution order, per `openspec/project.md` §11. Each
-box is independently specified and archived under `openspec/specs/`.
+The platform's full evolution order, per `openspec/project.md` §11.
+Every box is specified under `openspec/specs/` and, except Software
+Repository Understanding, implemented and tested.
 
 ```mermaid
 flowchart LR
     Repo[("Repository<br/>(real source code)")]
     RU["Software Repository<br/>Understanding<br/><sub>specified — not yet implemented</sub>"]
     RE["Repository Evidence<br/>Model"]
-    CB["CSM Builder<br/><sub>specified — implemented</sub>"]
-    CSM["Canonical Software<br/>Model (CSM)"]
-    Future["Analysis / Rule /<br/>Agent Framework<br/><sub>future</sub>"]
+    CB["CSM Builder<br/><sub>implemented</sub>"]
+    CSM["Canonical Software<br/>Model (CSM) Snapshot"]
+    AF["Analysis Framework<br/><sub>implemented</sub>"]
+    AR["Analysis Results"]
+    RF["Rule Framework<br/><sub>implemented</sub>"]
+    REv["Rule Evaluation<br/>Results"]
+    FM["Finding Model<br/><sub>implemented</sub>"]
+    Find["Findings"]
+    AgF["Agent Framework<br/><sub>implemented</sub>"]
+    Rec["Recommendations"]
+    ACA["Architecture Compliance<br/>Agent<br/><sub>implemented — first concrete<br/>Rule Type + Agent</sub>"]
 
     Repo -->|discovery| RU
     RU -->|produces| RE
     RE -->|sole input| CB
     CB -->|constructs, observed-only| CSM
-    CSM -.->|future| Future
+    CSM -->|sole input| AF
+    AF -->|produces| AR
+    CSM -->|Analysis View| RF
+    AR -->|via AnalysisResultSource| RF
+    RF -->|produces| REv
+    REv -->|via RuleEvaluationResultSource| FM
+    FM -->|produces| Find
+    Find -->|via FindingSource, only| AgF
+    AgF -->|produces| Rec
+    ACA -.->|registers boundary-compliance<br/>Rule Type + Agent, no new mechanism| RF
+    ACA -.->|registers| AgF
 ```
 
 CSM Builder's implementation proceeded independently of a Repository
 Understanding implementation — it depends only on the **Repository
 Evidence contract** (a data shape, `aip.core.evidence`), never on a
-concrete RU implementation module. Every test exercising CSM Builder
-does so against hand-built, contract-faithful fixtures
-(`aip.csmbuilder.test.fixtures`, test-scope only), never a real RU
-pipeline — the real pipeline's integration test is a reserved,
-not-yet-written seam:
-[`RepositoryToCsmPipelineIntegrationTest`](../aip-csm-builder/src/test/java/aip/csmbuilder/integration/RepositoryToCsmPipelineIntegrationTest.java).
-See
-[`.../explore.md`](../openspec/changes/archive/2026-08-11-implement-csm-builder/explore.md)
-for the full sequencing rationale.
+concrete RU implementation module. Every layer above it follows the
+same discipline: each depends on `aip-core`'s own contracts, never on
+the module that produced the content flowing through them. See
+[`.../implement-csm-builder/explore.md`](../openspec/changes/archive/2026-08-11-implement-csm-builder/explore.md)
+for the original sequencing rationale, which every later `implement-*`
+change reused unchanged.
 
 ## 2. Module dependency graph
 
 ```mermaid
 graph TD
-    core["<b>aip-core</b><br/><sub>aip.core.csm — CSM domain model<br/>aip.core.evidence — Repository Evidence contract</sub>"]
-    csmbuilder["<b>aip-csm-builder</b><br/><sub>aip.csmbuilder.* </sub>"]
-    analyzer["<b>aip-analyzer</b><br/><sub>future — not built yet</sub>"]
+    core["<b>aip-core</b><br/><sub>aip.core.csm — CSM domain model +<br/>four read-only Source contracts<br/>aip.core.evidence — Repository Evidence contract</sub>"]
+    csmbuilder["<b>aip-csm-builder</b><br/><sub>Evidence → CSM Snapshot</sub>"]
+    analyzer["<b>aip-analyzer</b><br/><sub>future — Repository Understanding<br/>implementation, not built yet</sub>"]
+    analysis["<b>aip-analysis</b><br/><sub>Analyzer contract + orchestration<br/>CSM Snapshot → AnalysisResult</sub>"]
+    rules["<b>aip-rules</b><br/><sub>Rule Type contract + orchestration<br/>+ concrete boundary-compliance Rule Type<br/>AnalysisResult/CSM → RuleEvaluationResult</sub>"]
+    findings["<b>aip-findings</b><br/><sub>Finding construction<br/>RuleEvaluationResult → Finding</sub>"]
+    ai["<b>aip-ai</b><br/><sub>Agent contract + orchestration<br/>+ concrete Architecture Compliance Agent<br/>Finding → Recommendation<br/><b>the only AI-bearing module</b></sub>"]
+    cli["<b>aip-cli / aip-server</b><br/><sub>future — not designed yet</sub>"]
 
     csmbuilder --> core
     analyzer --> core
+    analysis --> core
+    rules --> core
+    findings --> core
+    ai --> core
+    cli -.-> csmbuilder
+    cli -.-> analysis
+    cli -.-> rules
+    cli -.-> findings
+    cli -.-> ai
 ```
 
-**Invariant, enforced by `scripts/check-module-dependencies.sh` bound
-to `aip-csm-builder`'s `verify` phase:** `aip-csm-builder` depends on
-`aip-core` only — never on `aip-analyzer` or any future Repository
-Understanding implementation module. `aip-analyzer` and
-`aip-csm-builder` are siblings: both depend on `aip-core`, neither
-depends on the other. See
-[`design.md`](../openspec/changes/archive/2026-08-11-implement-csm-builder/design.md)
-Decision 1.
+**Invariant, mechanically enforced by `scripts/check-module-dependencies.sh`
+bound to every module's own `verify` phase:** every module below
+`aip-core` depends on `aip-core` **only**. `aip-csm-builder`,
+`aip-analyzer`, `aip-analysis`, `aip-rules`, `aip-findings`, and
+`aip-ai` are six independent siblings — **none depends on any other**,
+even though the *content* they produce flows through all of them in
+sequence at runtime. Each layer's own read access to its upstream
+neighbor's output goes through a dedicated `aip-core` contract instead
+(§3), never a direct module dependency — reused,
+`check-no-module-reference.sh`-enforced pattern from
+`implement-rule-framework` onward:
 
-## 3. `aip-core`: two independent domain models
+| Module | Forbidden cross-references (CI-enforced) |
+|---|---|
+| `aip-rules` | `aip.analysis.` |
+| `aip-findings` | `aip.rules.`, `aip.analysis.`, `aip.csmbuilder.` |
+| `aip-ai` | `aip.findings.`, `aip.rules.`, `aip.analysis.`, `aip.csmbuilder.` |
+
+`aip-ai` is additionally the **only** module exempt from
+`check-no-ai-heuristic-imports.sh` — see §6.
+
+## 3. `aip-core`: the domain model and its four read contracts
+
+`aip-core` grew one layer at a time, once per `implement-*` change,
+always for the same reason: a general artifact type or read contract
+with an already-named future consumer gets promoted here rather than
+duplicated per-module. 45 types now live in `aip.core.csm`, plus the
+independent `aip.core.evidence` Repository Evidence contract.
 
 ```mermaid
 graph TD
-    subgraph csm["aip.core.csm — the Canonical Software Model"]
-        Elem["CsmElement (sealed)<br/><sub>Repository·Project·Module·Package·Type·<br/>Method·ArchitectureComponent·ExternalSystem</sub>"]
-        Rel["CsmRelationship<br/><sub>+ CsmRelationshipType (8, closed)</sub>"]
-        Prov["ProvenanceRecord<br/><sub>+ ProvenanceCategory, Confidence</sub>"]
-        Subj["Subject / EffectiveKnowledgeStatus<br/>/ SubjectConflictMarker"]
-        Valid["CsmValidator / ValidationResult"]
+    subgraph csm["aip.core.csm"]
+        subgraph domain["CSM domain model (implement-csm-builder)"]
+            Elem["CsmElement (sealed)<br/><sub>Repository·Project·Module·Package·Type·<br/>Method·ArchitectureComponent·ExternalSystem</sub>"]
+            Rel["CsmRelationship<br/><sub>+ CsmRelationshipType (8, closed)</sub>"]
+            Prov["ProvenanceRecord<br/><sub>+ ProvenanceCategory, Confidence</sub>"]
+            Subj["Subject / EffectiveKnowledgeStatus<br/>/ SubjectConflictMarker"]
+            Snap["CsmSnapshotSource / CsmSnapshotId"]
+            Valid["CsmValidator / ValidationResult"]
+        end
+        subgraph analysisLayer["Analysis Framework (implement-analysis-framework)"]
+            View["AnalysisView<br/><sub>effective-knowledge projection</sub>"]
+            Scope["CsmScope / CsmScopeInstance /<br/>CsmScopeEvaluator<br/><sub>shared Scope declaration, reused<br/>verbatim by every later layer</sub>"]
+            AR["AnalysisResult / AnalysisResultId"]
+        end
+        subgraph ruleLayer["Rule Framework (implement-rule-framework)"]
+            ARS["AnalysisResultSource"]
+            RER["RuleEvaluationResult /<br/>RuleEvaluationResultId /<br/>RuleEvaluationOutcome"]
+        end
+        subgraph findingLayer["Finding Model (implement-finding-model)"]
+            RERS["RuleEvaluationResultSource"]
+            FM["FindingMetadata<br/><sub>Rule-Type-declared Category/<br/>Severity/Description/Impact contract</sub>"]
+            F["Finding / EvaluationIdentity /<br/>LogicalFindingIdentity"]
+        end
+        subgraph agentLayer["Agent Framework (implement-agent-framework)"]
+            FS["FindingSource"]
+        end
     end
-    subgraph evidence["aip.core.evidence — the Repository Evidence contract"]
+    subgraph evidence["aip.core.evidence"]
         EI["EvidenceItem<br/><sub>+ EvidenceId, EvidenceKind (12, closed)</sub>"]
         REM["RepositoryEvidenceModel<br/><sub>+ EvidenceRelationship</sub>"]
-        Life["ChangeStatus / LifecycleState<br/>/ ClassifiedEvidenceItem"]
-        Disc["DiscoveryOutcome / FailureReason<br/>/ ExtractionMethod"]
     end
 
-    Elem --> Prov
-    Rel --> Prov
-    Subj --> Elem
-    Subj --> Rel
-    Valid --> Elem
-    Valid --> Rel
-    REM --> EI
-    Life --> EI
-    Disc --> EI
+    domain --> analysisLayer --> ruleLayer --> findingLayer --> agentLayer
 ```
 
-`csm` and `evidence` are deliberately independent — neither package
-imports the other. This is what lets a CSM element's provenance
-reference an Evidence identity by opaque string (`ProvenanceRecord.sourceReference()`)
-without a compile-time coupling between the two contracts (see
-`aip.core.evidence`'s own package-info for the full rationale).
-`Subject`/`SubjectConflictMarker`/`CsmValidator` were added mid-implementation
-(Section 18/19) to close two real gaps found while implementing CSM
-Builder — see `design.md` Decisions 10 and 11.
+Four read-only `*Source` contracts — `CsmSnapshotSource`,
+`AnalysisResultSource`, `RuleEvaluationResultSource`, `FindingSource` —
+share one shape: read-by-identity, list-by-producer-and-scope, and
+nothing else. Each was placed in `aip-core` (rather than the producing
+module) specifically because a **second, already-named future
+consumer** existed at design time (e.g. `AnalysisResultSource` was
+named as Rule Framework's own future need while still specifying
+Analysis Framework). `RecommendationStore` (`aip-ai`) is the one
+deliberate exception — no second consumer of Recommendations is named
+anywhere in `project.md` yet, so it stays module-local (see
+[`design.md`](design.md) §4).
 
-## 4. `aip-csm-builder`: package structure
+`aip.core.csm` and `aip.core.evidence` remain deliberately independent
+packages — neither imports the other, enforced by
+`check-no-duplicate-csm-types.sh` / `check-no-duplicate-evidence-types.sh`.
+
+## 4. Six-module package structure
 
 ```mermaid
 graph TD
-    subgraph mapper["aip.csmbuilder.mapper"]
-        RM[RepositoryMapper]
-        PjM[ProjectMapper]
-        MM[ModuleMapper]
-        PkM[PackageMapper]
-        TM[TypeMapper]
-        MeM[MethodMapper]
-        ACM[ApiContractMapper]
-        FLR[FileLocationResolver]
+    subgraph csmbuilder["aip-csm-builder"]
+        cb1["aip.csmbuilder.mapper — 8 Mappers"]
+        cb2["aip.csmbuilder.mapping — MappingOrchestrator, registry,<br/>relationship builders"]
+        cb3["aip.csmbuilder.identity — ElementIdentityDeriver"]
+        cb4["aip.csmbuilder.provenance — ObservedProvenanceFactory, ProvenanceGuard"]
+        cb5["aip.csmbuilder.dependency — DependencyKindClassifier"]
+        cb6["aip.csmbuilder.snapshot — SnapshotStore, SnapshotPublisher"]
     end
-    subgraph mapping["aip.csmbuilder.mapping"]
-        MO[MappingOrchestrator]
-        Reg[EvidenceKindMapperRegistry]
-        MK["EvidenceKindMapper (contract)"]
-        CRB[ContainmentRelationshipBuilder]
-        DRB[DependencyRelationshipBuilder]
-        ESB[ExternalSystemRelationshipBuilder]
-        ERTG[ExcludedRelationshipTypeGuard]
-        FEF[FailedEvidenceFilter]
-        PEL["PriorElementLookup (contract)"]
-        CS[ConflictedSubjects]
+    subgraph analysis["aip-analysis"]
+        a1["Analyzer (contract) / AnalyzerRegistry"]
+        a2["AnalysisOrchestrator"]
+        a3["AnalysisResultValidator / AnalysisResultPublisher /<br/>AnalysisResultStore"]
     end
-    subgraph identity["aip.csmbuilder.identity"]
-        EID[ElementIdentityDeriver]
+    subgraph rules["aip-rules"]
+        r1["RuleType (contract) / Rule / RuleTypeRegistry / RuleRegistry"]
+        r2["RuleEvaluationOrchestrator"]
+        r3["RuleEvaluationResultValidator / Publisher / Store"]
+        r4["aip.rules.boundarycompliance — the first concrete<br/>Rule Type (BoundaryComplianceRuleType)"]
     end
-    subgraph provenance["aip.csmbuilder.provenance"]
-        OPF[ObservedProvenanceFactory]
-        PG[ProvenanceGuard]
+    subgraph findings["aip-findings"]
+        f1["FindingConstructor / ConcernedElementResolver"]
+        f2["FindingValidator / FindingPublisher / FindingStore"]
     end
-    subgraph dependency["aip.csmbuilder.dependency"]
-        DKC["DependencyKindClassifier (contract)"]
-        RDKC[ResourceDependencyKindClassifier]
+    subgraph ai["aip-ai"]
+        i1["Agent (contract) / AgentInvocationResult / AgentRegistry"]
+        i2["RecommendationConstructor"]
+        i3["RecommendationArtifactIdentity / GenerationIdentifier /<br/>GenerationProvenance / Recommendation"]
+        i4["RecommendationValidator / Publisher / Store"]
+        i5["aip.ai.architecturecompliance — the first concrete Agent<br/>(ArchitectureComplianceAgent)"]
     end
-    subgraph snapshot["aip.csmbuilder.snapshot"]
-        SS["SnapshotStore (contract)"]
-        FSS[FilesystemSnapshotStore]
-        SP[SnapshotPublisher]
-        SM[SnapshotManifest]
-    end
-    subgraph fixtures["aip.csmbuilder.test.fixtures<br/><sub>test-scope only</sub>"]
-        REB[RepositoryEvidenceModelBuilder]
-        FS[FixtureScenarios]
-    end
-
-    mapper --> mapping
-    mapper --> identity
-    mapper --> provenance
-    mapping --> dependency
-    mapping --> provenance
-    snapshot --> mapping
-    fixtures -.->|test code only| mapper
-    fixtures -.->|test code only| mapping
 ```
 
-Every solid arrow is a real, compile-scope package dependency; dashed
-arrows are test-scope only. Two directional invariants worth noting,
-both mechanically enforced (§7):
+Every module (except `aip-core` itself) follows the same internal
+shape: a **contract** (`Analyzer`/`RuleType`/`Agent`), a **registry**,
+an **orchestrator** (except `aip-findings` and, deliberately,
+`aip-ai` — see §7), and a **validate-then-publish gate**
+(`*Validator`/`*Publisher`/`*Store`). `aip-rules` and `aip-ai` each
+additionally host one concrete worked example — the boundary-compliance
+Rule Type and the Architecture Compliance Agent — in their own
+subpackage, never the module's flat top-level package, per
+`implement-architecture-compliance-agent/design.md` Decision 1.
 
-- **`mapping` never depends on `snapshot`.** Incremental re-derivation
-  (`PriorElementLookup`) is `mapping`'s own minimal interface —
-  `EvidenceId -> Optional<CsmElement + mapperVersion>` — not a
-  dependency on `Snapshot`/`SnapshotManifest`. `snapshot` depends on
-  `mapping` (to persist what it constructs), never the reverse. See
-  `design.md` Decision 9.
-- **Nothing in `aip.csmbuilder.mapper`/`mapping` depends on
-  `aip.csmbuilder.test.fixtures`.** The fixture-building API exists
-  only in test sources; production construction logic depends only on
-  `aip.core.evidence` *types*, never on how an instance of them was
-  produced (`scripts/check-fixture-package-scope.sh`).
+## 5. The validate-before-publish gate, repeated at every layer
 
-## 5. Evidence → CSM construction pipeline (one run)
+The single most-repeated structural pattern in this codebase — every
+producing layer constructs its own artifact type, validates it before
+it becomes usable output, and trusts (never re-verifies) the layer
+immediately below it.
 
-The full `MappingOrchestrator.construct` flow, including incremental
-scoping (Sections 16–17) and the batch relationship builders that run
-after every Evidence Item has been dispatched (Sections 8, 10–11).
+```mermaid
+flowchart LR
+    subgraph L1["CSM Builder"]
+        direction TB
+        m1[MappingOrchestrator] --> v1[CsmValidator] --> p1[SnapshotPublisher] --> s1[(SnapshotStore)]
+    end
+    subgraph L2["Analysis Framework"]
+        direction TB
+        m2[AnalysisOrchestrator] --> v2[AnalysisResultValidator] --> p2[AnalysisResultPublisher] --> s2[(AnalysisResultStore)]
+    end
+    subgraph L3["Rule Framework"]
+        direction TB
+        m3[RuleEvaluationOrchestrator] --> v3[RuleEvaluationResultValidator] --> p3[RuleEvaluationResultPublisher] --> s3[(RuleEvaluationResultStore)]
+    end
+    subgraph L4["Finding Model"]
+        direction TB
+        m4[FindingConstructor] --> v4[FindingValidator] --> p4[FindingPublisher] --> s4[(FindingStore)]
+    end
+    subgraph L5["Agent Framework"]
+        direction TB
+        m5[RecommendationConstructor] --> v5[RecommendationValidator] --> p5[RecommendationPublisher] --> s5[(RecommendationStore)]
+    end
+
+    L1 -.->|read via CsmSnapshotSource| L2
+    L1 -.->|read via AnalysisView| L3
+    L2 -.->|read via AnalysisResultSource| L3
+    L3 -.->|read via RuleEvaluationResultSource| L4
+    L4 -.->|read via FindingSource, only| L5
+```
+
+An invalid artifact and a written one are always mutually exclusive at
+every layer (each layer's own `PublicationOutcome`-shaped record
+enforces this at construction time, not just by convention). Each
+validator checks referential integrity against its **immediate**
+upstream layer only — it never re-verifies the layer two steps
+removed, since that layer's own gate already did. `RecommendationValidator`
+is the one layer whose checks are explicitly *structural and
+referential only* — it cannot, and does not claim to, verify that a
+Recommendation's guidance is substantively good (see
+[`design.md`](design.md) §5).
+
+## 6. Non-determinism boundary: `aip-ai` alone
+
+```mermaid
+flowchart TD
+    subgraph det["Deterministic — no AI, no randomness (5 modules)"]
+        direction LR
+        d1[aip-csm-builder] --- d2[aip-analysis] --- d3[aip-rules] --- d4[aip-findings]
+    end
+    subgraph nondet["aip-ai — the one AI-bearing module"]
+        g["GenerationIdentifier.generate()<br/><sub>UUID.randomUUID() — the ONLY<br/>randomness call site in this codebase</sub>"]
+        rec["Recommendation content<br/><sub>opaque, Agent-defined,<br/>NOT guaranteed reproducible</sub>"]
+    end
+    det -->|Findings, via FindingSource only| nondet
+```
+
+`check-no-ai-heuristic-imports.sh` runs against all five deterministic
+modules, forbidding `java.util.Random`/`SecureRandom`/
+`ThreadLocalRandom` and known AI/LLM SDK package imports. It is
+**deliberately not wired for `aip-ai`** — `GenerationIdentifier`'s
+per-invocation token is the one legitimate, narrowly-scoped exception,
+documented in `aip-ai`'s own `package-info.java`. The framework
+guarantees deterministic **Recommendation Artifact Identity** (stable,
+collision-free, durably retrievable) while making no claim that
+regenerating from the same `(Agent, version, Finding)` produces
+similar content — see [`design.md`](design.md) §6 for the full
+determinism-guarantee/non-guarantee split.
+
+`ArchitectureComplianceAgent`, the one concrete Agent implemented so
+far, is itself a **deterministic, template-based** realization — it
+never calls an external model (`implement-architecture-compliance-agent/design.md`
+Decision 6). No concrete LLM/model-provider adapter exists anywhere in
+this codebase yet.
+
+## 7. End-to-end worked example: a boundary violation, start to finish
+
+The one concrete vertical slice implemented across every layer —
+`BoundaryComplianceRuleType` (`aip-rules`) through
+`ArchitectureComplianceAgent` (`aip-ai`). No cross-module test spans
+this whole path (siblings cannot depend on each other), so it is
+demonstrated as two fixture-bridged test suites at the Finding
+boundary; this diagram shows the full logical flow they together cover.
+
+```mermaid
+sequenceDiagram
+    participant CSM as CSM Snapshot
+    participant RO as RuleEvaluationOrchestrator
+    participant RT as BoundaryComplianceRuleType
+    participant RV as RuleEvaluationResultValidator
+    participant FC as FindingConstructor
+    participant FV as FindingValidator
+    participant RC as RecommendationConstructor
+    participant AG as ArchitectureComplianceAgent
+    participant RecV as RecommendationValidator
+
+    CSM->>RO: AnalysisView (dependency + boundary/constraint relationships)
+    RO->>RT: evaluate(rule, view, scopeInstance)
+    Note right of RT: for each "must not depend on" constraint<br/>sourced at this Architecture Component,<br/>does an observed dependency violate it?
+    RT-->>RO: RuleTypeEvaluation(FAIL, BoundaryComplianceDiagnostic)
+    RO->>RO: wrap into RuleEvaluationResult
+    RO->>RV: validate(result, view, ...)
+    RV-->>RO: valid
+    RO-->>CSM: RuleEvaluationResult published (FAIL)
+
+    FC->>FC: qualifies? outcome==FAIL &&<br/>payload instanceof FindingMetadata
+    FC->>FC: construct Finding<br/>(Description/Impact carry violation detail)
+    FC->>FV: validate(finding, ruleEvaluationResultSource)
+    FV-->>FC: valid
+    FC-->>FC: Finding published
+
+    RC->>RC: GenerationIdentifier.generate()
+    RC->>AG: invoke(finding)
+    Note right of AG: deterministic, template-based —<br/>no model call; reads Finding.description()<br/>for violation identification
+    AG-->>RC: AgentInvocationResult(content, confidence, provenance)
+    RC->>RC: wrap into Recommendation
+    RC->>RecV: validate(recommendation, findingSource, agentRegistry)
+    RecV-->>RC: valid
+    RC-->>RC: Recommendation published
+```
+
+The Architecture Compliance Agent never reads the underlying
+`RuleEvaluationResult` or CSM content directly — the violating
+dependency target and violated boundary relationship identities reach
+it entirely through `Finding.description()`, computed dynamically
+per-instance by the Rule Type and carried through Finding Model's
+existing, unmodified field-copy mechanism (see
+[`design.md`](design.md) §3).
+
+## 8. CSM Builder deep dive: Evidence → CSM construction pipeline
+
+The one layer with genuinely rich internal structure — incremental
+re-derivation, Mapper versioning, and batch relationship building. The
+full `MappingOrchestrator.construct` flow:
 
 ```mermaid
 flowchart TD
@@ -194,14 +368,14 @@ flowchart TD
     Status{"change status?"}
     SkipRemoved(["skip — omitted from this<br/>snapshot, no PURGED wait"])
     Lookup["Registry.lookup(item.kind())"]
-    SkipUnmapped(["no Mapper registered → skip<br/><sub>how ConfigFile/ConfigReference and<br/>implementation/extension·invocation<br/>exclusions are realized</sub>"])
+    SkipUnmapped(["no Mapper registered → skip"])
     PriorCheck{"UNCHANGED and prior<br/>element's Mapper version<br/>matches current?"}
     Carry["carry prior element forward<br/><sub>Mapper NOT invoked</sub>"]
     Map["Mapper.map(item, context)"]
     Guard["ProvenanceGuard.verify(result, item)<br/><sub>observed-only + traceable, or throw</sub>"]
     Merge["merge into accumulated MappingResult"]
     Batch["ContainmentRelationshipBuilder<br/>DependencyRelationshipBuilder<br/>ExternalSystemRelationshipBuilder"]
-    ExclGuard["ExcludedRelationshipTypeGuard.verify(...)<br/><sub>no implementation/extension or invocation</sub>"]
+    ExclGuard["ExcludedRelationshipTypeGuard.verify(...)"]
     Result["MappingResult<br/><sub>CsmElements + CsmRelationships</sub>"]
 
     REM --> Sort --> Failed
@@ -217,129 +391,37 @@ flowchart TD
     Merge -->|all items processed| Batch --> ExclGuard --> Result
 ```
 
-## 6. A single item's processing, in detail
+See [`.../implement-csm-builder/design.md`](../openspec/changes/archive/2026-08-11-implement-csm-builder/design.md)
+for the full rationale, and
+[`.../invariants.md`](../openspec/changes/archive/2026-08-11-implement-csm-builder/invariants.md)
+for the architectural invariants §9's guard table reflects.
 
-Illustrated for `PackageMapper`, the one Mapper whose identity
-derivation depends on another Evidence Item (its containing Module) —
-see `PackageMapper`'s and `EvidenceRelationshipLookup`'s own class
-javadoc for why this lookup is order-independent (it re-derives the
-Module's identity via the same pure function every other Mapper uses,
-rather than asking the Orchestrator whether the Module has already
-been processed).
+## 9. Architectural guards enforced at `mvn verify`
 
-```mermaid
-sequenceDiagram
-    participant O as MappingOrchestrator
-    participant R as EvidenceKindMapperRegistry
-    participant M as PackageMapper
-    participant L as EvidenceRelationshipLookup
-    participant D as ElementIdentityDeriver
-    participant P as ObservedProvenanceFactory
-    participant G as ProvenanceGuard
+Every module's own `verify` phase runs its architectural guard scripts
+independently of the test suite. `mvn verify` from the repository root
+runs all of them across all six modules.
 
-    O->>R: lookup(PACKAGE)
-    R-->>O: PackageMapper
-    O->>M: map(packageItem, context)
-    M->>L: findSingleSource(CONTAINMENT, packageItem.id())
-    L-->>M: containing Module's EvidenceId
-    M->>D: fromEvidenceId(moduleEvidenceId)
-    D-->>M: containing Module's CsmElementId
-    M->>D: forPackage(moduleId, namespaceName)
-    D-->>M: this Package's CsmElementId
-    M->>P: fromEvidence(packageItem.id(), context.constructionTimestamp())
-    P-->>M: ProvenanceRecord (observed)
-    M-->>O: MappingResult(PackageElement)
-    O->>G: verify(result, packageItem)
-    G-->>O: OK
-    O->>O: merge into accumulated result
-```
+| Script | Scope | Enforces |
+|---|---|---|
+| `check-module-dependencies.sh` | every module | depends on `aip-core` only (or `aip-core`'s own zero-dependency rule) |
+| `check-no-module-reference.sh` | `aip-rules`, `aip-findings`, `aip-ai` | no cross-reference to a sibling module's package (see §2 table) |
+| `check-fixture-package-scope.sh` | every module with a fixture layer | production source never imports the test-only `*.test.fixtures` package |
+| `check-no-ai-heuristic-imports.sh` | all **except** `aip-ai` | no randomness or AI/LLM SDK import |
+| `check-no-concurrency-infrastructure.sh` | `aip-analysis` | no concurrency primitives — sequential dispatch behind a concurrency-permitting contract |
+| `check-no-duplicate-csm-types.sh` | reactor-wide | no CSM/Analysis contract type declared outside `aip.core.csm` |
+| `check-no-duplicate-evidence-types.sh` | reactor-wide | no Repository Evidence contract type declared outside `aip.core.evidence` |
+| `check-no-csm-builder-analysis-adapter.sh` | reactor-wide | no real `aip-csm-builder`→`aip-analysis` adapter exists yet |
+| `check-test-naming.sh` | `aip-csm-builder` | no test name implies real-pipeline Repository Understanding coverage |
+| `check-no-excluded-construction.sh` | `aip-csm-builder` | never constructs an Architecture Component or Architectural Boundary (CSM Builder is observed-only) |
 
-Note that `PackageMapper` never asks the Orchestrator "has the Module
-already been mapped?" — it independently re-derives the Module's CSM
-identity via the same pure `ElementIdentityDeriver` function every
-other Mapper uses. This is what makes the result identical regardless
-of dispatch order (proven by `PackageMapperTest.packageIdentityIsIndependentOfDispatchOrderRelativeToItsModule`).
-
-## 7. Snapshot lifecycle across two runs
-
-How construction, validation, persistence, and incremental
-re-derivation compose — the scenario
-`CsmBuilderFixtureEndToEndTest` exercises directly (Sections 15–19).
-
-```mermaid
-sequenceDiagram
-    participant Caller
-    participant MO as MappingOrchestrator
-    participant SP as SnapshotPublisher
-    participant CV as CsmValidator
-    participant Store as FilesystemSnapshotStore
-
-    rect rgb(235, 245, 255)
-    note over Caller,Store: Run 1 — full construction
-    Caller->>MO: construct(evidenceModel)
-    MO-->>Caller: MappingResult
-    Caller->>SP: publish(store, repoId, content, ts)
-    SP->>CV: validate(elements, relationships)
-    CV-->>SP: ValidationResult (valid)
-    SP->>Store: write(repoId, content, ts)
-    Store-->>SP: Snapshot #1
-    SP-->>Caller: PublicationOutcome(published)
-    end
-
-    rect rgb(245, 255, 240)
-    note over Caller,Store: Run 2 — incremental
-    Caller->>MO: construct(evidenceModel, changeStatuses, priorElements)
-    note right of MO: UNCHANGED + matching Mapper version → carried forward<br/>REMOVED → omitted<br/>ADDED/MODIFIED/version-changed → reconstructed
-    MO-->>Caller: MappingResult
-    Caller->>SP: publish(store, repoId, content, ts')
-    SP->>CV: validate(elements, relationships)
-    CV-->>SP: ValidationResult (valid)
-    SP->>Store: write(repoId, content, ts')
-    Store-->>SP: Snapshot #2
-    SP-->>Caller: PublicationOutcome(published)
-    end
-
-    Caller->>Store: read(repoId, 1)
-    Store-->>Caller: Snapshot #1, unaffected by Snapshot #2
-```
-
-A snapshot that fails `CsmValidator` is never written at all — `SnapshotPublisher`
-gates `SnapshotStore.write`, so an invalid snapshot and a written one
-are mutually exclusive outcomes (`SnapshotPublisher.PublicationOutcome`'s
-own invariant).
-
-## 8. Architectural guards enforced at `mvn verify`
-
-Six build-time checks, independent of the test suite, per
-[`invariants.md`](../openspec/changes/archive/2026-08-11-implement-csm-builder/invariants.md).
-All run in the `verify` phase; five are `aip-csm-builder`-scoped, one
-(evidence-type uniqueness) is reactor-wide.
-
-```mermaid
-flowchart LR
-    subgraph checks["scripts/"]
-        C1[check-module-dependencies.sh]
-        C2[check-no-duplicate-evidence-types.sh]
-        C3[check-fixture-package-scope.sh]
-        C4[check-test-naming.sh]
-        C5[check-no-ai-heuristic-imports.sh]
-        C6[check-no-excluded-construction.sh]
-    end
-
-    C1 -->|invariants 1, 2| I1["aip-csm-builder → aip-core only"]
-    C2 -->|invariant 3| I2["no duplicate Evidence type<br/>outside aip.core.evidence"]
-    C3 -->|invariant 4| I3["fixtures are test-scope only"]
-    C4 -->|invariant 8| I4["no test name implies<br/>real-pipeline RU coverage"]
-    C5 -->|invariant 10| I5["no AI/LLM/randomness import"]
-    C6 -->|invariant 10| I6["no Architecture Component /<br/>Architectural Boundary construction"]
-```
-
-## 9. Development workflow
+## 10. Development workflow
 
 Every significant capability or implementation change follows this
-sequence (`CLAUDE.md`) — CSM Builder is the first capability to have
-completed the full cycle, archived under
-[`openspec/changes/archive/2026-08-11-implement-csm-builder/`](../openspec/changes/archive/2026-08-11-implement-csm-builder/).
+sequence (`CLAUDE.md`). All eight `project.md` §11 capabilities have
+now completed the full cycle at least once (`define-*` for
+specification, `implement-*` for code); each is archived under
+[`openspec/changes/archive/`](../openspec/changes/archive/).
 
 ```mermaid
 flowchart LR
@@ -347,6 +429,13 @@ flowchart LR
 ```
 
 `openspec/specs/` holds the source-of-truth output of Specify/Review
-for each capability; `openspec/changes/archive/` preserves every
-completed cycle's Explore/Proposal/Design/Tasks artifacts for
-traceability.
+for every capability — `canonical-software-model`, `software-repository-understanding`,
+`csm-builder`, `analysis-framework`, `rule-framework`, `finding-model`,
+`agent-framework`, `architecture-compliance-agent`.
+`openspec/changes/archive/` preserves every completed cycle's
+Explore/Proposal/Design/Tasks/Traceability artifacts for traceability —
+14 archived changes as of this writing: one `define-*`/`implement-*`
+pair for each of Analysis Framework, Rule Framework, Finding Model,
+Agent Framework, and Architecture Compliance Agent, plus CSM Builder's
+own `define-*`/`implement-*` pair, `define-canonical-software-model`,
+and `define-software-repository-understanding` (not yet implemented).
