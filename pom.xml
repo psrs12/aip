@@ -26,6 +26,7 @@
   <modules>
     <module>aip-core</module>
     <module>aip-csm-builder</module>
+    <module>aip-analysis</module>
   </modules>
 
   <!--
@@ -79,6 +80,43 @@
             </goals>
             <configuration>
               <executable>${project.basedir}/scripts/check-no-duplicate-evidence-types.sh</executable>
+            </configuration>
+          </execution>
+          <!--
+            CSM/Analysis contract uniqueness guard
+            (implement-analysis-framework/tasks.md 14.3): fails the
+            reactor build if any Java source file, in any module,
+            declares a class/record/interface/enum with the same name
+            as one of aip.core.csm's own CSM or Analysis Framework
+            contract types, outside that package.
+          -->
+          <execution>
+            <id>check-no-duplicate-csm-types</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/scripts/check-no-duplicate-csm-types.sh</executable>
+            </configuration>
+          </execution>
+          <!--
+            No-real-adapter guard
+            (implement-analysis-framework/design.md Decision 9 /
+            proposal.md Binding Decision 2; tasks.md 15.3): fails the
+            reactor build if aip-csm-builder ever references the
+            Analysis Framework's own aip-core types — a real adapter
+            connecting aip-csm-builder's Snapshot to CsmSnapshotSource
+            is deliberately not built in this change.
+          -->
+          <execution>
+            <id>check-no-csm-builder-analysis-adapter</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/scripts/check-no-csm-builder-analysis-adapter.sh</executable>
             </configuration>
           </execution>
         </executions>
