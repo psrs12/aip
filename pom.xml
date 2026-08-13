@@ -27,6 +27,7 @@
     <module>aip-core</module>
     <module>aip-csm-builder</module>
     <module>aip-analysis</module>
+    <module>aip-rules</module>
   </modules>
 
   <!--

@@ -1,12 +1,5 @@
-package aip.analysis;
+package aip.core.csm;
 
-import aip.core.csm.AnalysisView;
-import aip.core.csm.CsmElement;
-import aip.core.csm.CsmElementId;
-import aip.core.csm.CsmRelationship;
-import aip.core.csm.CsmScope;
-import aip.core.csm.CsmScopeInstance;
-import aip.core.csm.NativeAttributes;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -14,21 +7,36 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 /**
- * Analysis Scope instance enumeration and applicability, per {@code
- * Analysis Scope Declaration}, {@code Kind-Based Analyzer
- * Applicability}, and {@code Native-Attribute Applicability
- * Refinement}.
+ * {@link CsmScope} instance enumeration and applicability — the
+ * general mechanism both Analysis Scope and Rule Scope are defined in
+ * terms of, per {@code Analysis Scope Declaration}/{@code Rule Scope
+ * Declaration}, {@code Kind-Based Analyzer Applicability}/{@code
+ * Kind-Based Rule Applicability}, and {@code Native-Attribute
+ * Applicability Refinement}/{@code Native-Attribute Rule Applicability
+ * Refinement} — all four requirement pairs worded identically across
+ * the two specifications.
+ *
+ * <p>Promoted to {@code aip-core}, per {@code
+ * implement-rule-framework/design.md}'s own extension of the reasoning
+ * `CsmScope` and `AnalysisResult` were already promoted under: this is
+ * one general mechanism two sibling modules (`aip-analysis`,
+ * `aip-rules`) each need identically, with the second consumer already
+ * concretely present, not speculative — originally implemented as
+ * `aip-analysis`'s own {@code AnalysisScopeEvaluator}, moved here
+ * rather than duplicated once Rule Framework's implementation needed
+ * the identical logic, avoiding exactly the "second, subtly
+ * incompatible mechanism" risk this project has repeatedly avoided
+ * elsewhere.
  */
-public final class AnalysisScopeEvaluator {
+public final class CsmScopeEvaluator {
 
-  private AnalysisScopeEvaluator() {}
+  private CsmScopeEvaluator() {}
 
   /**
-   * Every Scope instance {@code scope} is invoked against, per {@code
-   * Unanchored Analyzer is invoked once per repository} (a single
-   * {@link CsmScopeInstance#wholeRepository()}) and {@code Anchored
-   * Analyzer is invoked once per matching contained element} (one
-   * instance per element of the anchor kind present in {@code view}).
+   * Every Scope instance {@code scope} is invoked against: a single
+   * {@link CsmScopeInstance#wholeRepository()} when unanchored, or one
+   * instance per element of the anchor kind present in {@code view}
+   * when anchored.
    */
   public static List<CsmScopeInstance> enumerateInstances(AnalysisView view, CsmScope scope) {
     Objects.requireNonNull(view, "view");
@@ -44,11 +52,11 @@ public final class AnalysisScopeEvaluator {
   }
 
   /**
-   * Whether {@code scope} is applicable to {@code instance}, per
-   * {@code Kind-Based Analyzer Applicability} ("the corresponding CSM
-   * content contains at least one element or relationship of a kind
-   * within that Analyzer's declared Analysis Scope") and, when
-   * declared, {@code Native-Attribute Applicability Refinement}.
+   * Whether {@code scope} is applicable to {@code instance}: the
+   * corresponding CSM content contains at least one element or
+   * relationship of a declared kind, and, when a native-attribute
+   * predicate is declared, at least one element or relationship also
+   * satisfies it.
    */
   public static boolean isApplicable(AnalysisView view, CsmScope scope, CsmScopeInstance instance) {
     Objects.requireNonNull(view, "view");

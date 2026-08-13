@@ -3,6 +3,7 @@ package aip.analysis;
 import aip.core.csm.AnalysisResult;
 import aip.core.csm.AnalysisView;
 import aip.core.csm.CsmScope;
+import aip.core.csm.CsmScopeEvaluator;
 import aip.core.csm.CsmScopeInstance;
 import aip.core.csm.CsmSnapshotSource;
 import java.util.ArrayList;
@@ -52,8 +53,8 @@ public final class AnalysisOrchestrator {
     List<AnalysisResult> results = new ArrayList<>();
     for (Analyzer analyzer : registry.registered()) {
       CsmScope scope = analyzer.scope();
-      for (CsmScopeInstance instance : AnalysisScopeEvaluator.enumerateInstances(view, scope)) {
-        if (!AnalysisScopeEvaluator.isApplicable(view, scope, instance)) {
+      for (CsmScopeInstance instance : CsmScopeEvaluator.enumerateInstances(view, scope)) {
+        if (!CsmScopeEvaluator.isApplicable(view, scope, instance)) {
           continue;
         }
         Object payload = analyzer.analyze(view, instance);
