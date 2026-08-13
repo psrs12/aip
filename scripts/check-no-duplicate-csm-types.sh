@@ -50,6 +50,11 @@ reserved_names=(
   RuleEvaluationOutcome
   RuleEvaluationResult
   RuleEvaluationResultId
+  RuleEvaluationResultSource
+  FindingMetadata
+  EvaluationIdentity
+  LogicalFindingIdentity
+  Finding
 )
 
 violations=()

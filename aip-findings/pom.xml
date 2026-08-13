@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>aip</groupId>
+    <artifactId>aip-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>aip-findings</artifactId>
+  <packaging>jar</packaging>
+
+  <name>aip-findings</name>
+  <description>
+    Deterministic Finding Model: interprets Rule Framework's Rule
+    Evaluation Results into durable, traceable Findings carrying two
+    distinct identities (Evaluation Identity, Logical Finding
+    Identity). See openspec/changes/define-finding-model/ and
+    openspec/changes/implement-finding-model/. Depends on aip-core
+    only — per design.md Decision 9, this module SHALL NOT depend on
+    aip-rules, aip-analysis, aip-csm-builder, or aip-analyzer.
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>aip</groupId>
+      <artifactId>aip-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!--
+        Dependency-graph guard (design.md Decision 9; tasks.md 1.3,
+        19.1): fails the build if this module's resolved dependency
+        graph ever contains anything other than aip-core.
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>check-module-dependencies</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-module-dependencies.sh</executable>
+              <arguments>
+                <argument>aip-findings</argument>
+                <argument>aip:aip-core</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <!--
+            Fixture-package scope guard (design.md Decision 10;
+            tasks.md 1.5): fails the build if any production source
+            under src/main/java references the test-only
+            fixture-building package.
+          -->
+          <execution>
+            <id>check-fixture-package-scope</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-fixture-package-scope.sh</executable>
+              <arguments>
+                <argument>aip-findings</argument>
+                <argument>aip.findings.test.fixtures</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <!--
+            No-AI/heuristic-import guard: fails the build if
+            production source imports a randomness API or a known
+            AI/LLM SDK package.
+          -->
+          <execution>
+            <id>check-no-ai-heuristic-imports</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-no-ai-heuristic-imports.sh</executable>
+              <arguments>
+                <argument>aip-findings</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <!--
+            No-real-adapter guards (design.md Decision 9; tasks.md
+            1.4): fail the build if aip-findings source ever
+            references an aip-rules, aip-analysis, or aip-csm-builder
+            implementation type. Three executions of the same generic
+            script built during implement-rule-framework specifically
+            for this kind of reuse.
+          -->
+          <execution>
+            <id>check-no-aip-rules-adapter</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-no-module-reference.sh</executable>
+              <arguments>
+                <argument>aip-findings</argument>
+                <argument>aip\.rules\.</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>check-no-aip-analysis-adapter</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-no-module-reference.sh</executable>
+              <arguments>
+                <argument>aip-findings</argument>
+                <argument>aip\.analysis\.</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>check-no-aip-csmbuilder-adapter</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/../scripts/check-no-module-reference.sh</executable>
+              <arguments>
+                <argument>aip-findings</argument>
+                <argument>aip\.csmbuilder\.</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

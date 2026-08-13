@@ -28,6 +28,7 @@
     <module>aip-csm-builder</module>
     <module>aip-analysis</module>
     <module>aip-rules</module>
+    <module>aip-findings</module>
   </modules>
 
   <!--
