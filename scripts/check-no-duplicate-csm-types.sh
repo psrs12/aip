@@ -45,6 +45,11 @@ reserved_names=(
   AnalysisView
   AnalysisResult
   AnalysisResultId
+  CsmScopeEvaluator
+  AnalysisResultSource
+  RuleEvaluationOutcome
+  RuleEvaluationResult
+  RuleEvaluationResultId
 )
 
 violations=()

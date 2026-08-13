@@ -1,10 +1,5 @@
-package aip.analysis;
+package aip.core.csm;
 
-import aip.core.csm.AnalysisView;
-import aip.core.csm.CsmElement;
-import aip.core.csm.CsmElementId;
-import aip.core.csm.CsmRelationship;
-import aip.core.csm.CsmRelationshipType;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.LinkedHashSet;
@@ -16,11 +11,12 @@ import java.util.Set;
  * given anchor element, following {@code CONTAINMENT} relationships
  * (source = containing entity, target = contained entity, per {@code
  * aip-csm-builder}'s own {@code ContainmentRelationshipBuilder}) —
- * used by {@link AnalysisScopeEvaluator} to determine what "this
- * anchored element's own Analysis Scope instance" actually contains,
- * per {@code Anchored Analyzer is invoked once per matching contained
- * element, each invocation covering that element's own Analysis Scope
- * instance}.
+ * used by {@link CsmScopeEvaluator} to determine what "this anchored
+ * element's own Scope instance" actually contains, per {@code Anchored
+ * Analyzer is invoked once per matching contained element, each
+ * invocation covering that element's own Analysis Scope instance} and
+ * Rule Framework's identically-worded {@code Anchored Rule Type is
+ * invoked once per matching contained element}.
  */
 final class ContainmentClosure {
 
