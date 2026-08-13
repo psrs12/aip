@@ -55,6 +55,7 @@ reserved_names=(
   EvaluationIdentity
   LogicalFindingIdentity
   Finding
+  FindingSource
 )
 
 violations=()

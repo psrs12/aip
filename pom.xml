@@ -29,6 +29,7 @@
     <module>aip-analysis</module>
     <module>aip-rules</module>
     <module>aip-findings</module>
+    <module>aip-ai</module>
   </modules>
 
   <!--
