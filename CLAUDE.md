@@ -277,19 +277,41 @@ Before introducing a significant dependency:
 
 # Module Architecture
 
-The intended initial module structure is:
+The actual, implemented module structure (validated during each
+capability's own design phase, per the note below — not the originally
+assumed linear chain):
 
-aip-core
-  ↓
-aip-analyzer
-  ↓
-aip-rules
-  ↓
-aip-ai
-  ↓
-aip-cli / aip-server
+```
+                    aip-core
+                       |
+   +----------+--------+--------+----------+----------+
+   |          |        |        |          |          |
+aip-csm-   aip-       aip-     aip-      aip-       aip-analyzer
+builder    analysis   rules    findings  ai         (Repository
+(built)    (built)    (built)  (built)   (built —   Understanding
+                                          the only   implementation,
+                                          AI-bearing not yet built)
+                                          module)
 
-The exact dependency graph must be validated during design.
+                                                aip-cli / aip-server
+                                                (future, not yet
+                                                built)
+```
+
+`aip-csm-builder`, `aip-analysis`, `aip-rules`, `aip-findings`,
+`aip-ai`, and `aip-analyzer` are six independent siblings — **each
+depends on `aip-core` only, never on any other sibling**, even though
+the content they produce flows through all of them in sequence at
+runtime (Repository Evidence → CSM Snapshot → Analysis Results → Rule
+Evaluation Results → Findings → Recommendations). Each layer reads its
+upstream neighbor's output through a dedicated `aip-core` read
+contract (`CsmSnapshotSource`, `AnalysisResultSource`,
+`RuleEvaluationResultSource`, `FindingSource`) instead of a direct
+module dependency — mechanically enforced by
+`scripts/check-module-dependencies.sh` and
+`scripts/check-no-module-reference.sh` at every module's own `verify`
+phase. See `docs/architecture.md` §2–3 and `docs/design.md` §7 for the
+full graph and the reasoning behind each contract's placement.
 
 `aip-core` must remain independent of:
 
@@ -297,6 +319,15 @@ The exact dependency graph must be validated during design.
 - CLI frameworks
 - Server frameworks
 - Language-specific analyzers
+
+`aip-ai` is the one module permitted to depend on AI/LLM mechanics
+internally (though no concrete LLM provider is wired yet — the one
+Agent implemented so far, `ArchitectureComplianceAgent`, is
+deterministic and template-based). It is the only module exempt from
+the no-randomness/no-AI-import build guard
+(`scripts/check-no-ai-heuristic-imports.sh`), and it is not a
+dependency of, nor is it depended on by, any of the five deterministic
+modules.
 
 ---
 
@@ -351,18 +382,39 @@ architecture.
 
 # Current Development Focus
 
-The immediate goal is to establish the conceptual foundation
-of AIP before implementing the first agent.
+Every capability named in `openspec/project.md` §11's evolution order
+has completed the full Explore → Propose → Design → Specify → Review →
+Implement → Test → Verify → Archive cycle at least once:
 
-Current exploration topic:
+Canonical Software Model → CSM Builder → Analysis Framework →
+Rule Framework → Finding Model → Agent Framework →
+Architecture Compliance Agent.
 
-"What information must AIP collect and understand about a
-software system to perform meaningful architecture, design,
-risk, and compliance analysis?"
+`openspec/specs/` holds the current, approved specification for each;
+`openspec/changes/archive/` holds every completed cycle's
+proposal/design/tasks/traceability artifacts. `mvn verify` from the
+repository root builds, tests, and architecturally guards all six
+implemented modules together (315 tests as of the last full run — see
+`docs/architecture.md` for the up-to-date pipeline diagram and
+`docs/design.md` for the underlying technical design).
 
-The next major architectural artifact is the:
+Not yet built:
 
-Canonical Software Model (CSM).
+- A real Software Repository Understanding implementation
+  (`aip-analyzer`) — `software-repository-understanding` is specified
+  but every capability above it was implemented against
+  contract-faithful fixtures instead, per each `implement-*` change's
+  own deliberate sequencing decision.
+- Any `project.md` §5 agent beyond Architecture Compliance (Architecture
+  Drift, Dependency Boundary, Layering, Domain Boundary, API
+  Architecture, Event Architecture, and the Design/Security/Risk/
+  Compliance categories).
+- A real LLM/model-provider adapter — every Agent implemented so far
+  (`ArchitectureComplianceAgent`) is deterministic and template-based.
+- `aip-cli` / `aip-server` — no design work has started on either.
 
-Do not implement the CSM until its conceptual boundaries,
-responsibilities, and requirements have been specified.
+When picking up new work, follow the same workflow this project has
+used for every capability so far: Explore first, do not skip Design or
+Specify for a significant change, and check whether an existing
+`define-*` change already specifies the capability before writing a
+new one.
