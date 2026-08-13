@@ -1,5 +1,6 @@
 package aip.rules.test.fixtures;
 
+import aip.core.csm.ArchitectureComponentElement;
 import aip.core.csm.CsmElement;
 import aip.core.csm.CsmElementId;
 import aip.core.csm.CsmRelationship;
@@ -14,6 +15,7 @@ import aip.core.csm.TypeElement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -66,6 +68,60 @@ public final class CsmSnapshotSourceBuilder {
 
   public CsmSnapshotSourceBuilder boundaryConstraint(CsmElementId source, CsmElementId target) {
     return relationship(CsmRelationshipType.BOUNDARY_CONSTRAINT, source, target, Optional.empty());
+  }
+
+  /**
+   * An Architecture Component composed of {@code composition}, per
+   * {@code Component composed of existing structural elements} —
+   * declared provenance (Architecture Components are never {@code
+   * OBSERVED}, per {@link ArchitectureComponentElement}'s own
+   * construction-time guard).
+   */
+  public CsmElementId architectureComponent(String name, List<CsmElementId> composition) {
+    return add(
+        new ArchitectureComponentElement(nextElementId(), name, declared(), NativeAttributes.empty(), composition));
+  }
+
+  /** An Architecture Component with inferred (rather than declared) provenance. */
+  public CsmElementId architectureComponentInferred(String name, List<CsmElementId> composition) {
+    return add(
+        new ArchitectureComponentElement(
+            nextElementId(), name, inferred(), NativeAttributes.empty(), composition));
+  }
+
+  /**
+   * A "must not depend on" {@code BOUNDARY_CONSTRAINT} relationship,
+   * carrying the {@code constraint-kind: must-not-depend-on}
+   * {@code NativeAttributes} convention {@code BoundaryComplianceRuleType}
+   * reads (`implement-architecture-compliance-agent/design.md`
+   * Decision 2), with declared provenance.
+   */
+  public CsmElementId mustNotDependOnConstraint(CsmElementId source, CsmElementId target) {
+    return boundaryConstraintWithAttributes(
+        source, target, NativeAttributes.of(Map.of("constraint-kind", "must-not-depend-on")), declared());
+  }
+
+  /** A "must not depend on" constraint with inferred (rather than declared) provenance. */
+  public CsmElementId mustNotDependOnConstraintInferred(CsmElementId source, CsmElementId target) {
+    return boundaryConstraintWithAttributes(
+        source, target, NativeAttributes.of(Map.of("constraint-kind", "must-not-depend-on")), inferred());
+  }
+
+  /** A {@code BOUNDARY_CONSTRAINT} relationship expressing a constraint shape other than "must not depend on". */
+  public CsmElementId mustOnlyCommunicateViaConstraint(CsmElementId source, CsmElementId target) {
+    return boundaryConstraintWithAttributes(
+        source, target, NativeAttributes.of(Map.of("constraint-kind", "must-only-communicate-via")), declared());
+  }
+
+  private CsmElementId boundaryConstraintWithAttributes(
+      CsmElementId source, CsmElementId target, NativeAttributes attributes, ProvenanceRecord provenance) {
+    Objects.requireNonNull(source, "source");
+    Objects.requireNonNull(target, "target");
+    CsmRelationship relationship =
+        CsmRelationship.of(
+            nextRelationshipId(), CsmRelationshipType.BOUNDARY_CONSTRAINT, source, target, provenance, attributes);
+    relationships.add(relationship);
+    return relationship.id();
   }
 
   public CsmSnapshotSourceBuilder relationship(
@@ -123,5 +179,13 @@ public final class CsmSnapshotSourceBuilder {
 
   private static ProvenanceRecord observed() {
     return ProvenanceRecord.observed("fixture", Instant.EPOCH);
+  }
+
+  private static ProvenanceRecord declared() {
+    return ProvenanceRecord.declared("fixture", Instant.EPOCH);
+  }
+
+  private static ProvenanceRecord inferred() {
+    return ProvenanceRecord.inferred("fixture", Instant.EPOCH, aip.core.csm.Confidence.HIGH);
   }
 }
