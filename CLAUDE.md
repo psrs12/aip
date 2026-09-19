@@ -392,9 +392,13 @@ Architecture Compliance Agent.
 
 `openspec/specs/` holds the current, approved specification for each;
 `openspec/changes/archive/` holds every completed cycle's
-proposal/design/tasks/traceability artifacts. `mvn verify` from the
+proposal/design/tasks/traceability artifacts (16 archived changes as
+of this writing — Analysis Framework alone has been through the cycle
+twice: its original `2026-08-13` pair, plus a `2026-09-18` amendment
+pair adding Incremental Analysis support and strengthening the
+Analysis Result validation/publish gate). `mvn verify` from the
 repository root builds, tests, and architecturally guards all six
-implemented modules together (315 tests as of the last full run — see
+implemented modules together (384 tests as of the last full run — see
 `docs/architecture.md` for the up-to-date pipeline diagram and
 `docs/design.md` for the underlying technical design).
 
@@ -412,6 +416,43 @@ Not yet built:
 - A real LLM/model-provider adapter — every Agent implemented so far
   (`ArchitectureComplianceAgent`) is deterministic and template-based.
 - `aip-cli` / `aip-server` — no design work has started on either.
+- A real `aip-csm-builder` → `aip-analysis` adapter (CSM Builder's
+  `Snapshot` does not implement `CsmSnapshotSource`) and any concrete
+  `Analyzer` — every module boundary in the pipeline has so far been
+  exercised only against hand-built test fixtures, never real,
+  non-fixture content from the module immediately upstream.
+
+## In progress: closing the real-data wiring gap
+
+`openspec/changes/explore-next-evolution/explore.md` is a completed
+Explore-phase inventory (not itself a proposal) concluding that,
+although `project.md` §11's named evolution order is fully specified
+and mostly implemented, the pipeline has never been run against real
+repository content — most consequentially, nothing in the system can
+construct the Architecture Component/Boundary content the one built
+Agent (Architecture Compliance) requires, because CSM Builder is
+mechanically forbidden from constructing it
+(`csm-builder`'s own `Exclusion of Architectural Inference and
+Declared-Knowledge Construction` requirement). It recommends closing
+this gap, in priority order, before adding further Agents or
+capabilities: (1) resolve declared/inferred CSM knowledge construction,
+(2) build a real `aip-csm-builder` → `aip-analysis` adapter plus a
+first concrete `Analyzer`, (3) choose persistence technology for the
+four still-interface-only `*Store`s.
+
+`openspec/changes/define-declared-knowledge-construction/` addresses
+item (1): Propose → Design → Specify are complete (a new module,
+`aip-declared-knowledge`, constructing `declared`-only CSM knowledge
+from a plain Java `Declaration` value, validated against a supplied
+baseline `CsmSnapshotSource`, combined with `observed` content via a
+new general `aip-core` `CompositeCsmSnapshotSource`). Its first formal
+Review pass found three REQUIRED CHANGE items (a factual overclaim
+about existing cross-category precedence machinery, an ambiguous
+Boundary Constraint endpoint-resolution rule, and a missing
+per-element identity-derivation decision) — recommendation **REVISE**,
+not yet approved. No implementation code exists for this change yet;
+do not treat `aip-declared-knowledge` as built. Check this change's own
+status before continuing it or starting related work.
 
 When picking up new work, follow the same workflow this project has
 used for every capability so far: Explore first, do not skip Design or

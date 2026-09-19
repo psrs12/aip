@@ -35,9 +35,13 @@ flowchart LR
 ```
 
 `mvn verify` from the repository root builds and architecturally
-guards the full six-module reactor: **315 tests, 0 failures**, plus
+guards the full six-module reactor: **384 tests, 0 failures**, plus
 every module's own dependency-graph, fixture-scope, and
-no-AI-import CI guards.
+no-AI-import CI guards. Analysis Framework has been through the
+Explore → Archive cycle twice — its original specification, and a
+`2026-09-18` amendment adding Incremental Analysis support and
+strengthening the Analysis Result validation/publish gate (see
+`openspec/changes/archive/`).
 
 | Module | Capability | Depends on |
 |---|---|---|
@@ -57,7 +61,21 @@ dependency graph and the CI checks enforcing it.
 
 `aip-analyzer` (a real Repository Understanding implementation) and
 `aip-cli`/`aip-server` are named in `openspec/project.md`'s module
-chain but not yet built.
+chain but not yet built. Every module boundary above has so far been
+exercised only against hand-built test fixtures — no real
+`aip-csm-builder` → `aip-analysis` adapter and no concrete `Analyzer`
+exist yet either.
+
+### In progress
+
+`openspec/changes/explore-next-evolution/` inventories the gap above
+and recommends closing it before adding further capabilities.
+`openspec/changes/define-declared-knowledge-construction/` is the
+first step (a new module constructing `declared` Architecture
+Component/Boundary content — currently required by the one built
+Agent but constructible nowhere in this codebase today); its
+Specify-phase artifacts exist but its first Review pass returned
+**REVISE**, and no implementation code exists yet.
 
 ## Development Methodology
 

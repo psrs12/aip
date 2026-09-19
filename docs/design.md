@@ -119,6 +119,36 @@ boundary-compliance Rule Type's own applicability tests
 most concrete, fully-worked demonstration: five distinct fixture
 scenarios, one per branch of the flowchart above.
 
+### `CsmScopeChangeDetector`: the same Scope declaration, reused for incremental re-execution
+
+A `2026-09-18` amendment to `analysis-framework` added the one
+remaining consumer of `CsmScope` this section's own "one declaration
+type, reused verbatim" framing anticipated: given two `AnalysisView`s
+of the same repository, `CsmScopeChangeDetector` (`aip-core`, alongside
+`CsmScopeEvaluator`) reports whether a declared Scope's own content
+(reusing `CsmScopeEvaluator.contentElements`/`contentRelationships`
+directly, not a re-derived diffing mechanism) differs between the two
+views — the basis `aip-analysis`'s `IncrementalAnalysis` uses to
+determine which registered Analyzers may need re-execution. Deliberately
+coarse, by design: a whole-scope set-equality check, never a
+per-Subject or per-relationship-instance diff, and never a declared
+dependency between two Analyzers — the same "contract permits more,
+v1 implementation stays simple" discipline this document already
+applies to concurrency (§ below) and, before that, to CSM Builder's own
+snapshot persistence choice.
+
+### Validation-gate wording, sharpened at the store level
+
+The `2026-09-18` amendment also sharpened `analysis-framework`'s own
+validation/publish gate, closing a wording gap a prior Review pass
+identified: "an Analysis Result that fails validation SHALL NOT be
+published as usable output" left open whether a failing Result could
+still be *written* to `AnalysisResultStore` and merely suppressed from
+normal retrieval. The requirement now states explicitly that a failing
+Result SHALL NOT be written to the store at all, and that no Result
+returned by any store query SHALL have failed validation — see §5
+below for how this fits the wider validation-trust-boundary pattern.
+
 ## 3. `FindingMetadata`: the cross-module content-bridging mechanism
 
 Two genuine implementation-level gaps existed once `aip-findings` and
@@ -313,6 +343,21 @@ implementation time, not a gap discovered later:
   designed escape hatch rather than modifying an already-approved
   domain type. (`implement-architecture-compliance-agent/design.md`
   Decision 2.)
+
+- **No producer of `declared` or `inferred` CSM knowledge exists
+  anywhere in this codebase.** CSM Builder is mechanically forbidden
+  from constructing an Architecture Component or Boundary Constraint
+  (`csm-builder`'s own `Exclusion of Architectural Inference and
+  Declared-Knowledge Construction` requirement); nothing else
+  constructs them either. `ArchitectureComplianceAgent` — the one
+  concrete Agent built — therefore has no mechanism to obtain its own
+  required input from a real, analyzed repository and can only be
+  exercised via hand-built fixtures. `openspec/changes/explore-next-
+  evolution/explore.md` names this as the most consequential open item
+  found by inventorying the system as a whole; `openspec/changes/
+  define-declared-knowledge-construction/` is the in-progress change
+  addressing it (Specify complete, first Review pass returned REVISE —
+  see `CLAUDE.md`'s "Current Development Focus" for current status).
 
 None of these are silent gaps — each is named in its own archived
 `design.md` under a Risks/Trade-offs section, and repeated here so a
