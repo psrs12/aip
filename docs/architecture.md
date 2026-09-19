@@ -5,9 +5,17 @@ capability named in `openspec/project.md` §11's evolution order is
 specified (`openspec/specs/`), implemented, tested, and archived
 (`openspec/changes/archive/`). The system is a six-module Maven
 reactor, `mvn verify` from the repository root builds and
-architecturally guards all of it: 315 tests, 0 failures, across
+architecturally guards all of it: 384 tests, 0 failures, across
 `aip-core`, `aip-csm-builder`, `aip-analysis`, `aip-rules`,
 `aip-findings`, and `aip-ai`.
+
+A capability's cycle can repeat: Analysis Framework's own
+`analysis-framework` spec has been through Explore → Archive twice —
+its original `2026-08-13` pair, and a `2026-09-18` amendment pair
+adding Incremental Analysis support (`CsmScopeChangeDetector`,
+`aip-core`) and strengthening the Analysis Result validation/publish
+gate to explicitly cover the `AnalysisResultStore` itself, not only
+"published as usable output."
 
 For the detailed technical design underlying this diagram set — identity
 schemes, the validate-before-publish gate repeated at every layer,
@@ -134,6 +142,7 @@ graph TD
             View["AnalysisView<br/><sub>effective-knowledge projection</sub>"]
             Scope["CsmScope / CsmScopeInstance /<br/>CsmScopeEvaluator<br/><sub>shared Scope declaration, reused<br/>verbatim by every later layer</sub>"]
             AR["AnalysisResult / AnalysisResultId"]
+            Change["CsmScopeChangeDetector<br/><sub>2026-09-18 amendment — coarse<br/>scope-content diff across two<br/>AnalysisViews, for Incremental<br/>Analysis's re-execution-candidate<br/>determination</sub>"]
         end
         subgraph ruleLayer["Rule Framework (implement-rule-framework)"]
             ARS["AnalysisResultSource"]
@@ -188,6 +197,7 @@ graph TD
         a1["Analyzer (contract) / AnalyzerRegistry"]
         a2["AnalysisOrchestrator"]
         a3["AnalysisResultValidator / AnalysisResultPublisher /<br/>AnalysisResultStore"]
+        a4["IncrementalAnalysis<br/><sub>2026-09-18 amendment — re-execution<br/>candidates via aip-core's<br/>CsmScopeChangeDetector</sub>"]
     end
     subgraph rules["aip-rules"]
         r1["RuleType (contract) / Rule / RuleTypeRegistry / RuleRegistry"]
@@ -257,8 +267,12 @@ flowchart LR
 
 An invalid artifact and a written one are always mutually exclusive at
 every layer (each layer's own `PublicationOutcome`-shaped record
-enforces this at construction time, not just by convention). Each
-validator checks referential integrity against its **immediate**
+enforces this at construction time, not just by convention) — Analysis
+Framework's own gate was strengthened in a `2026-09-18` amendment to
+state this explicitly at the store level ("no Analysis Result that
+failed validation SHALL ever be present in the `AnalysisResultStore`"),
+closing a wording gap the rest of this table's layers did not have.
+Each validator checks referential integrity against its **immediate**
 upstream layer only — it never re-verifies the layer two steps
 removed, since that layer's own gate already did. `RecommendationValidator`
 is the one layer whose checks are explicitly *structural and
@@ -434,8 +448,18 @@ for every capability — `canonical-software-model`, `software-repository-unders
 `agent-framework`, `architecture-compliance-agent`.
 `openspec/changes/archive/` preserves every completed cycle's
 Explore/Proposal/Design/Tasks/Traceability artifacts for traceability —
-14 archived changes as of this writing: one `define-*`/`implement-*`
+16 archived changes as of this writing: one `define-*`/`implement-*`
 pair for each of Analysis Framework, Rule Framework, Finding Model,
 Agent Framework, and Architecture Compliance Agent, plus CSM Builder's
 own `define-*`/`implement-*` pair, `define-canonical-software-model`,
-and `define-software-repository-understanding` (not yet implemented).
+`define-software-repository-understanding` (not yet implemented), and
+a second `define-*`/`implement-*` pair (`2026-09-18`) amending Analysis
+Framework with Incremental Analysis support and a strengthened
+validation gate.
+
+`openspec/changes/explore-next-evolution/` and
+`openspec/changes/define-declared-knowledge-construction/` are active,
+unarchived changes as of this writing — see `CLAUDE.md`'s "Current
+Development Focus" for their status. `declared-knowledge-construction`
+Propose/Design/Specify are complete but its first Review pass returned
+REVISE; no `aip-declared-knowledge` module or code exists yet.
